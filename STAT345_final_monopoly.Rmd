@@ -20,6 +20,12 @@ Expected Submission: You will generate a well-written R Markdown report that add
 
 
 ```{r}
+equip <- read.csv("General Equipment CSV.csv")
+players <- read.csv("Players Dataset CSV.csv")
+railroads <- read.csv("Railroads Dataset CSV.csv")
+deeds <- read.csv("Title Deeds Dataset CSV.csv")
+util <- read.csv("Utilities Dataset CSV.csv")
+
 #install.packages("devtools")
 #devtools::install_github("mkuhn/dict")
 library(dict)
@@ -36,9 +42,9 @@ board <- vector(mode = "list", length = 40)
 d <- dict()
 locations <- c("income tax")
 d[[1]] <- locations[1]
-#d[[1]]
+d[[1]]
 
-#Hey whats up
+
 ```
 
 

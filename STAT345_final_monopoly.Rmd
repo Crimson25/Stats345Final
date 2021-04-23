@@ -20,6 +20,8 @@ Expected Submission: You will generate a well-written R Markdown report that add
 
 
 ```{r}
+#install.packages("devtools")
+#devtools::install_github("mkuhn/dict")
 library(dict)
 rollDice <- function(){
   diceOne <- sample(1:6, 1)

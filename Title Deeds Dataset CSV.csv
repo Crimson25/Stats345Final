@@ -1,0 +1,23 @@
+Identifier,Property Name,Color,List Price,Available for Purchase,Rent,House 1,House 2,House 3,House 4,Hotel,Cost of Houses/Hotels,Mortage Value
+1,Mediterranean Avenue,Brown,60,Yes,2,10,30,90,160,250,50,30
+2,Baltic Avenue,Brown,60,Yes,4,20,60,180,320,450,50,30
+3,Oriental Avenue,Light Blue,100,Yes,6,30,90,270,400,550,50,50
+4,Vermont Avenue,Light Blue,100,Yes,6,30,90,270,400,550,50,50
+5,Connecticut Avenue,Light Blue,120,Yes,8,40,100,300,450,600,50,60
+6,St. Charles Place,Magenta,140,Yes,10,50,150,450,625,750,100,70
+7,States Avenue,Magenta,140,Yes,10,50,150,450,625,750,100,70
+8,Virginia Avenue,Magenta,160,Yes,12,60,180,500,700,900,100,80
+9,St. James Place,Orange,180,Yes,14,70,200,550,750,950,100,90
+10,Tennesse Avenue,Orange,180,Yes,14,70,200,550,750,950,100,90
+11,New York Avenue,Orange,200,Yes,16,80,220,600,800,1000,100,100
+12,Kentucky Avenue,Red,220,Yes,18,90,250,700,875,1050,150,110
+13,Indiana Avenue,Red,220,Yes,18,90,250,700,875,1050,150,110
+14,Illinois Avenue,Red,240,Yes,20,100,300,750,925,1100,150,120
+15,Atlantic Avenue,Yellow,260,Yes,22,110,330,800,975,1150,150,130
+16,Ventnor Avenue,Yellow,260,Yes,22,110,330,800,975,1150,150,130
+17,Marvin Gardens,Yellow,280,Yes,24,120,360,850,1025,1200,150,140
+18,Pacific Avenue,Green,300,Yes,26,130,390,900,1100,1275,200,150
+19,North Carolina Avenue,Green,300,Yes,26,130,390,900,1100,1275,200,150
+20,Pennsylvania Avenue,Green,320,Yes,28,150,450,1000,1200,1400,200,160
+21,Park Place,Dark Blue,350,Yes,35,175,500,1100,1300,1500,200,175
+22,Boardwalk,Dark Blue,400,Yes,50,200,600,1400,1700,2000,200,200

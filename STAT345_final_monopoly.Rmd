@@ -20,7 +20,7 @@ Expected Submission: You will generate a well-written R Markdown report that add
 
 
 ```{r}
-
+library(dict)
 rollDice <- function(){
   diceOne <- sample(1:6, 1)
   diceTwo <- sample(1:6, 1)

@@ -33,7 +33,7 @@ rollDice <- function(){
   diceOne <- sample(1:6, 1)
   diceTwo <- sample(1:6, 1)
   totalDice <- diceOne + diceTwo
-  print(totalDice)
+  #print(totalDice)
 }
 
 rollDice()

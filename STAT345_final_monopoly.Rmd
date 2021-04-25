@@ -48,6 +48,24 @@ d[[1]]
 ```
 
 ```{r}
+moving <- function(){
+  
+  #place you were previously at and the amount you move
+  place = place + move
+  
+  #if you get to the last square, it will restart 
+   if(place > 40){
+    
+    leftover = place - 40
+    place = leftover
+  }
+  
+  place
+}
+```
+
+
+```{r}
 #more complex dice roll that factors in double rolls
   dice_roll <- function(){
   

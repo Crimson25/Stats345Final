@@ -47,4 +47,37 @@ d[[1]]
 
 ```
 
+```{r}
+#more complex dice roll that factors in double rolls
+  dice_roll <- function(){
+  
+  #first dice roll 
+  dice <- sample(1:6, 2, replace = TRUE)
+  
+  #if you roll doubles, rolls again
+  if(dice[1] == dice[2]){
+    
+    dice <- sample(1:6, 2, replace = TRUE)
+    
+    #if you roll doubles, rolls again
+    if(dice[1] == dice[2]){
+    
+      dice <- sample(1:6, 2, replace = TRUE)
+      
+      #if you roll doubles, tells you to go to jail
+      if(dice[1] == dice[2]){
+    
+      dice <- sample(1:6, 2, replace = TRUE)
+      print("Go to Jail")
+     }
+    }
+  }
+  
+  #prints the sum of your numbers (amount of spots you move) unless you go to jail
+  if(dice[1] != dice[2]){
+  
+    sum(dice)
+  }
+}
+```
 

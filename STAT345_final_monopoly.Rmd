@@ -98,4 +98,90 @@ moving <- function(){
   }
 }
 ```
+#NEW IDEAS (04-26-2021)
+   #FUNCTIONS: Combined previous dice roll ideas; Check Hand; Go to Jail; In Jail/Exiting Jail
+   #CONSIDERATIONS: I think a simple dice roll function that can be applied to more complex situations might be useful; explained in greater detail below.
+
+#Simple Roll Dice:
+```{r}
+new_roll_dice <- function(){
+  dice <- sample(1:6, 2, replace = TRUE)
+  return(dice)
+}
+```   
+
+#Check Player's Hand:
+```{r}
+Check_Hand <- function(player_identifier)
+{
+  Players_Hands_Dataset[player_identifier,]
+}
+```
+
+#Go to Jail:
+```{r}
+#unsure how we want to create a jail; idea is that we can have at most four players in jail at once, so we can assign each element of a list of cardinality 4 a unique position which corresponds to the player's number.
+
+jail <- list(NA, NA, NA, NA)
+
+Go_to_Jail <- function(player_identifier)
+{
+  jail[[player_identifier]] <- player_identifier
+  jail
+  #end turn
+}
+```
+
+#In Jail/Exiting Jail:
+```{r}
+#Needs additional work to count how long someone has been in jail for. 
+
+In_Out_Jail <- function(player_identifer)
+{
+  hand <- Check_Hand(player_identifer)
+  card <- hand %>% select(Get.Out.of.Jail.Free) 
+  
+  if(is.na(card) == FALSE)
+  {
+    card[[1]] <-NA
+    print(paste0("Player", player_identifer, " uses a 'Get Out of Jail Free Card.'"))
+    #return player to just visiting
+    #initiate new roll
+  }
+  
+  else
+  {
+    funds <- hand %>% select(Bank)
+    
+    if(funds >= 500)
+    {
+      funds[[1]] <- funds[[1]] - 50
+      
+      print(paste0("Player", player_identifer, " pays M$ 50 to exit jail."))
+      #return player to just visiting
+      #initiate new roll
+    }
+    
+    else
+    {
+      roll <- new_roll_dice()
+      
+      if(roll[1] == roll[2])
+      { 
+        print(paste0("Player", player_identifer, " rolls doubles to exit jail."))
+        #return player to just visiting
+        #initiate new roll
+      }
+      
+      else
+      {
+        print(paste0("Player", player_identifer, " remains in jail."))
+        Go_to_Jail(1)
+      }
+    }
+    
+  }
+}
+```
+
 

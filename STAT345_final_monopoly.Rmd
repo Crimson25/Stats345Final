@@ -176,7 +176,7 @@ In_Out_Jail <- function(player_identifer)
       else
       {
         print(paste0("Player", player_identifer, " remains in jail."))
-        Go_to_Jail(1)
+        Go_to_Jail(player_identifer)
       }
     }
     

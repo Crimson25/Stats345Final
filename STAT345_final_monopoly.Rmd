@@ -20,6 +20,7 @@ Expected Submission: You will generate a well-written R Markdown report that add
 
 
 ```{r}
+prop <- read.csv("Properties.csv")
 equip <- read.csv("General Equipment CSV.csv")
 players <- read.csv("Players Dataset CSV.csv")
 railroads <- read.csv("Railroads Dataset CSV.csv")
@@ -29,39 +30,72 @@ util <- read.csv("Utilities Dataset CSV.csv")
 #install.packages("devtools")
 #devtools::install_github("mkuhn/dict")
 library(dict)
-rollDice <- function(){
-  diceOne <- sample(1:6, 1)
-  diceTwo <- sample(1:6, 1)
-  totalDice <- diceOne + diceTwo
-  print(totalDice)
-}
 
-rollDice()
-
+players <- c(1,2,3,4)
+position <- dict()
+position[1] <- 1
+position[2] <- 1
+position[3] <- 1
+position[4] <- 1
 board <- vector(mode = "list", length = 40)
-d <- dict()
-locations <- c("income tax")
-d[[1]] <- locations[1]
-d[[1]]
+
+
+spaces <- dict()
+locations <- c(prop$Properties)
+i <- 0
+while(i < 40){
+  spaces[i] <- locations[i]
+  i <- i + 1
+}
 
 
 ```
 
 ```{r}
-moving <- function(){
+rollDice <- function(counter = 0, playerID){
+  diceOne <- sample(1:6, 1)
+  diceTwo <- sample(1:6, 1)
+  diceOne
+  diceTwo
+  if(diceOne == diceTwo){
+    if(counter == 2){
+      print("Go to Jail")
+      #moving()
+      return()
+    }
+    totalDice <- diceOne + diceTwo
+    moving(playerID, totalDice)
+    rollDice(counter + 1, playerID)
+  }
+  else{
+    totalDice <- diceOne + diceTwo
+    moving(playerID, totalDice)
+  }
+}
+
+
+moving <- function(playerNum, space){
   
   #place you were previously at and the amount you move
-  place = place + move
-  
+  position[[playerNum]] <- position[[playerNum]] + space
+  user_place <- position[[playerNum]]
+  print("you traveled this many squares")
+  print(space)
   #if you get to the last square, it will restart 
-   if(place > 40){
-    
-    leftover = place - 40
-    place = leftover
+   if(position[[playerNum]] > 41){
+    position[[playerNum]] <- position[[playerNum]] - 40
   }
-  
-  place
+
+  print("You landed on")
+  print(spaces[[user_place]])
+  position[playerNum] <- user_place
+  print(position[1])
+  return(user_place)
 }
+
+
+position[1] <- rollDice(0,1)
+position[1]
 ```
 
 
@@ -108,6 +142,7 @@ new_roll_dice <- function(){
   dice <- sample(1:6, 2, replace = TRUE)
   return(dice)
 }
+new_roll_dice()
 ```   
 
 #Check Player's Hand:

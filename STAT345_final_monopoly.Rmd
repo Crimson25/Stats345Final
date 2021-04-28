@@ -53,19 +53,19 @@ while(i < 40){
 
 ```{r}
 rollDice <- function(counter = 0, playerID){
-  diceOne <- sample(1:6, 1)
-  diceTwo <- sample(1:6, 1)
+  diceOne <- sample(1:3, 1)
+  diceTwo <- sample(4:6, 1)
   diceOne
   diceTwo
   if(diceOne == diceTwo){
-    if(counter == 2){
-      print("Go to Jail")
+    #if(counter == 2){
+     # print("Go to Jail")
       #moving()
-      return()
-    }
-    totalDice <- diceOne + diceTwo
-    moving(playerID, totalDice)
-    rollDice(counter + 1, playerID)
+     # return()
+    #}
+    #totalDice <- diceOne + diceTwo
+   # moving(playerID, totalDice)
+   # rollDice(counter + 1, playerID)
   }
   else{
     totalDice <- diceOne + diceTwo
@@ -75,15 +75,15 @@ rollDice <- function(counter = 0, playerID){
 
 
 moving <- function(playerNum, space){
-  
+ 
   #place you were previously at and the amount you move
   position[[playerNum]] <- position[[playerNum]] + space
   user_place <- position[[playerNum]]
   print("you traveled this many squares")
   print(space)
   #if you get to the last square, it will restart 
-   if(position[[playerNum]] > 41){
-    position[[playerNum]] <- position[[playerNum]] - 40
+   if(user_place >= 41){
+    user_place <- user_place - 40
   }
 
   print("You landed on")

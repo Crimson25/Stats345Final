@@ -184,7 +184,7 @@ maxnegative <- function(x){
   min(x)
 }
 minpositive <- function(x){
-  max(x[x > 0])
+  min(x[x > 0])
 }
 
 if (all(difference < 0)){

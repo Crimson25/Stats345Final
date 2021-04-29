@@ -171,21 +171,31 @@ ggplot(frequency_data, aes(1:40, value)) + geom_col()
 ```
 
 #chance card: finding the neareset railraod
-  #does not account for >35 
-``{r}
+  ```{r}
 railroad_num <- c(6, 15, 25, 35)
 
-position[1] <- 7
+position[1] <- 40
 position[[1]]
 
 difference <- railroad_num - position[[1]]
 difference
 
+maxnegative <- function(x){
+  min(x)
+}
 minpositive <- function(x){
-  min(x[x > 0])
+  max(x[x > 0])
 }
 
-distance <- minpositive(difference)
+if (all(difference < 0)){
+   print("All values are non-negatives!")
+  distance <- maxnegative(difference)
+  
+}else{
+  distance <- minpositive(difference)
+}
+
+distance
 
 next_railraod <- distance + position[[1]]
 

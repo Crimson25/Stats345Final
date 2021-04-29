@@ -37,7 +37,6 @@ position[1] <- 1
 position[2] <- 1
 position[3] <- 1
 position[4] <- 1
-board <- vector(mode = "list", length = 40)
 
 
 spaces <- dict()
@@ -98,6 +97,28 @@ position[1] <- rollDice(0,1)
 position[1]
 ```
 
+#creating and initiating board:
+```{r}
+board <- vector(mode = "list", length = 40)
+
+#sets each board space to count 0
+for( i in 1:40){
+  board[[i]] <- 0
+}
+```
+
+#counting amount of times a space is landed on:
+```{r}
+position[1] <- 1
+num <- position[[1]]
+
+position[1] <-rollDice(0,1)
+num <- position[[1]]
+
+board[[num]] <- board[[num]] + 1
+
+board
+```
 
 ```{r}
 #more complex dice roll that factors in double rolls

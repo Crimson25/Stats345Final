@@ -128,14 +128,12 @@ library(tidyverse)
 
 spot_frequency <- simulation(50000)
 
-frequency_data <- data.frame(spot_frequency) 
-#flips data
-frequency_data <- t(frequency_data)
+frequency_data <- as.data.frame(spot_frequency) 
 
+frequency_data <- frequency_data %>% pivot_longer(1:40)
 
-frequency_data <- data.frame(space = 1:40, count = frequency)
-
-ggplot(frequency_data, aes(space, frequency)) + geom_col()
+frequency_data
+ggplot(frequency_data, aes(1:40, value)) + geom_col()
 ```
 
 ```{r}

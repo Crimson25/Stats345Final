@@ -112,12 +112,15 @@ for( i in 1:40){
 position[1] <- 1
 num <- position[[1]]
 
+simulation <- function(times){
+  
+  for(i in 1:times){
 position[1] <-rollDice(0,1)
 num <- position[[1]]
-
 board[[num]] <- board[[num]] + 1
-
-board
+  }
+  board
+}
 ```
 
 ```{r}

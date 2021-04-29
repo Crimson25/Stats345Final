@@ -173,15 +173,6 @@ ggplot(frequency_data, aes(1:40, value)) + geom_col()
    #FUNCTIONS: Combined previous dice roll ideas; Check Hand; Go to Jail; In Jail/Exiting Jail
    #CONSIDERATIONS: I think a simple dice roll function that can be applied to more complex situations might be useful; explained in greater detail below.
 
-#Simple Roll Dice:
-```{r}
-new_roll_dice <- function(){
-  dice <- sample(1:6, 2, replace = TRUE)
-  return(dice)
-}
-new_roll_dice()
-```   
-
 #Check Player's Hand:
 ```{r}
 Check_Hand <- function(player_identifier)
@@ -256,4 +247,153 @@ In_Out_Jail <- function(player_identifer)
 }
 ```
 
+#NEW COMMIT (04-29-2021)
+  #Note: Movement was tested with a list instead of a dictonary, as the install for the library(dict) kept erroring out on my computer; there did not appear to be any significant changes in the structure of the code however, and it is therefore my belief the function will work for the dictonary too. (I can share the code for the list later if that is needed.)
 
+#Simple Roll Dice:
+```{r}
+roll_dice <- function()
+{
+  dice <- sample(1:6, 2, replace = TRUE)
+  return(dice)
+}
+```   
+
+#Force Doubles / Force Differing Dice
+```{r}
+force_doubles <- function()
+{
+  dice <- sample(1:1, 2, replace = TRUE)
+  return(dice)
+}
+
+differing_dice <- function()
+{
+  dice <- sample(1:6, 2, replace = TRUE)
+  
+  while (dice[1] == dice[2]) 
+  {
+    dice <- sample(1:6, 2, replace = TRUE)
+  }
+  
+  return(dice)
+}
+```
+
+#Moving Functions:
+```{r}
+moving <- function(playerID, spaces_to_move)
+{
+  #Player's position on board + dice roll amount:
+  position[[playerID]] <- position[[playerID]] + spaces_to_move
+  user_place <- position[[playerID]]
+  
+  #Restarts Count after Passing GO:
+  if(user_place >= 41)
+  {
+    user_place <- user_place - 40
+  }
+  
+  print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
+  #position[playerID] <- user_place
+  return(user_place)
+}
+```
+
+```{r}
+moving_doubles <- function(playerID, spaces_to_move, player_location)
+{
+  position[[playerID]] <- player_location
+  position[[playerID]] <- position[[playerID]] + spaces_to_move
+  user_place <- position[[playerID]]
+  
+  #Restarts Count after Passing GO:
+  if(user_place >= 41)
+  {
+    user_place <- user_place - 40
+  }
+  
+  print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
+  #position[playerID] <- user_place
+  return(user_place)
+}
+```
+
+#Rolls for Movement:
+```{r}
+#The following function rolls the dice for movement purposes; there are a couple parts worth noting:
+  #The roll_to_move_player function uses three functions: roll_dice, moving, and moving_doubles
+  #There are several cases to consider, but they are all designed to account for the count of the doubles and player location after each movement. 
+  #The moving function and moving doubles function can likely be combined by adding a count argument and using an if/else statement to update player location based on the presence of doubles.
+
+roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
+{
+  #print(player_position)
+  p <- player_position
+  #print(p)
+  
+  
+  roll <- roll_dice()
+  #roll <- force_doubles()
+  #roll <- differing_dice()
+  #roll <- c(3, 4)
+  
+  if(roll[1] == roll[2])
+  {
+    if(counter == 2)
+    {
+      print(paste0("Player", playerID, " is sent to Jail for rolling too many doubles."))
+      #moving()
+      return()
+    }
+    
+    else
+    {
+      print(counter)
+      totalDice <- sum(roll)
+  
+      if(counter == 0)
+      {
+        print(paste0("Player", playerID, " rolls doubles!", " The sum of their roll is: ", totalDice))
+        new_position <- moving(playerID, totalDice)
+        player_position <- new_position
+        #print(player_position)
+      }
+      
+      else
+      {
+        print(paste0("Player", playerID, " rolls again and rolls: ", totalDice))
+        new_position <- moving_doubles(playerID, totalDice, p)
+        player_position <- new_position
+        #print(player_position)
+      }
+    
+      
+      roll_to_move_player(playerID, counter + 1, new_position)
+    }
+  }
+  
+  else
+  {
+    totalDice <- sum(roll)
+    if(counter == 0)
+    {
+      print(paste0("Player", playerID, " rolls: ", totalDice))
+      moving(playerID, totalDice)
+    }
+    
+    else
+    {
+      print(paste0("Player", playerID, " rolls again and rolls: ", totalDice))
+      moving_doubles(playerID, totalDice, p)
+    }
+    
+  }
+}
+```
+
+#Move Player 1 for Testing:
+```{r}
+position[1] <- roll_to_move_player(1)
+position[1]
+#position[1] <- 1

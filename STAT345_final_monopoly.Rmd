@@ -122,6 +122,21 @@ board[[num]] <- board[[num]] + 1
   board
 }
 ```
+#frequency simulation and graph
+```{r}
+library(tidyverse)
+
+spot_frequency <- simulation(50000)
+
+frequency_data <- data.frame(spot_frequency) 
+#flips data
+frequency_data <- t(frequency_data)
+
+
+frequency_data <- data.frame(space = 1:40, count = frequency)
+
+ggplot(frequency_data, aes(space, frequency)) + geom_col()
+```
 
 ```{r}
 #more complex dice roll that factors in double rolls

@@ -41,15 +41,12 @@ position[4] <- 1
 spaces <- dict()
 locations <- c(prop$Properties)
 i <- 0
-while(i < 40){
+while(i < 41){
   spaces[i] <- locations[i]
   i <- i + 1
 }
 
-
 ```
-
-
 
 
 #creating and initiating board:
@@ -383,10 +380,10 @@ roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
 
 #Move Player 1 for Testing:
 ```{r}
+position[1]
 position[1] <- roll_to_move_player(1)
 position[1]
-position[2] <- roll_to_move_player(2)
-position[2]
+
 #position[1] <- 1
 
 ```

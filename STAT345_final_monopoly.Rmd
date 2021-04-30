@@ -118,14 +118,13 @@ position[1] <-rollDice(0,1)
 num <- position[[1]]
 board[[num]] <- board[[num]] + 1
   }
-  board
 }
 ```
 #frequency simulation and graph
 ```{r}
 library(tidyverse)
 
-spot_frequency <- simulation(50000)
+spot_frequency <- simulation(5)
 
 frequency_data <- as.data.frame(spot_frequency) 
 
@@ -168,6 +167,41 @@ ggplot(frequency_data, aes(1:40, value)) + geom_col()
   }
 }
 ```
+
+#chance card: finding the neareset railraod
+```{r}
+railroad_num <- c(6, 15, 25, 35)
+
+position[1] <- 40
+position[[1]]
+
+difference <- railroad_num - position[[1]]
+difference
+
+maxnegative <- function(x){
+  min(x)
+}
+minpositive <- function(x){
+  min(x[x > 0])
+}
+
+if (all(difference < 0)){
+   print("All values are non-negatives!")
+  distance <- maxnegative(difference)
+  
+}else{
+  distance <- minpositive(difference)
+}
+
+distance
+
+next_railraod <- distance + position[[1]]
+
+position[1] <- next_railraod
+
+position[[1]]
+```
+
 #NEW IDEAS (04-26-2021)
    #FUNCTIONS: Combined previous dice roll ideas; Check Hand; Go to Jail; In Jail/Exiting Jail
    #CONSIDERATIONS: I think a simple dice roll function that can be applied to more complex situations might be useful; explained in greater detail below.
@@ -341,7 +375,7 @@ roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
   {
     if(counter == 2)
     {
-      print(paste0("Player", playerID, " is sent to Jail for rolling too many doubles."))
+      print(paste0("Player", playerID, " is sent to Jail for rolling too many doubles.", " The sum of their roll is: ", totalDice))
       #moving()
       return()
     }
@@ -351,7 +385,7 @@ roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
       print(counter)
       totalDice <- sum(roll)
   
-      if(counter == 0)
+      if(counter == 0 || counter == 1)
       {
         print(paste0("Player", playerID, " rolls doubles!", " The sum of their roll is: ", totalDice))
         new_position <- moving(playerID, totalDice)
@@ -395,6 +429,8 @@ roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
 ```{r}
 position[1] <- roll_to_move_player(1)
 position[1]
+position[2] <- roll_to_move_player(2)
+position[2]
 #position[1] <- 1
 
 ```

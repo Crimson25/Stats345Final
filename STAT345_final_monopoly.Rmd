@@ -20,12 +20,14 @@ Expected Submission: You will generate a well-written R Markdown report that add
 
 
 ```{r}
-prop <- read.csv("Properties.csv")
+#prop <- read.csv("Properties.csv")
+prop <- read.csv("Game_Board_Spaces_Git.csv")
 equip <- read.csv("General Equipment CSV.csv")
 players <- read.csv("Players Dataset CSV.csv")
 railroads <- read.csv("Railroads Dataset CSV.csv")
 deeds <- read.csv("Title Deeds Dataset CSV.csv")
 util <- read.csv("Utilities Dataset CSV.csv")
+action_cards <- read.csv("Action_Cards_Git.csv")
 
 #install.packages("devtools")
 #devtools::install_github("mkuhn/dict")

@@ -1,0 +1,32 @@
+Objective,Card Type,Money,Places
+Advance to St. Charles Place. Collect $200 if you pass GO.,Chance,200,St. Charles Place
+Get out of Jail Free,Chance,,
+Advance to Illinois Ave.,Chance,,Illinois Avenue
+"Advance to GO, collect $200.",Chance,200,GO
+Bank Pays you dividends of $50.,Chance,50,
+Pay poor tax of $15.,Chance,-15,
+Go directly to Jail. Do not pass GO; do not collect $200.,Chance,,Jail / Just Visiting
+You have been elected chairman of the board. Pay each player $50.,Chance,-50,
+Go back 3 spaces.,Chance,,-3
+Pay School Tax of $15.,Community,-15,
+Pay Hospital $100.,Community,-100,
+"Income Tax Refund, Collect $20.",Community,20,
+Go To Jail.,Community,,Jail / Just Visiting
+Get Out of Jail Free,Community,,
+You have won second prize in a beauty contest. Collect $10.,Community,100,
+"Bank Error in your favor, Collect $200.",Community,200,
+Advance to GO (Collect $200).,Community,200,GO
+"Xmas Fund Matures, Collect $100.",Community,100,
+"Doctor's Fee, Pay $50.",Community,-50 for each player,
+"From Sale of Stock, you get $45.",Community,45,
+Receive for services $25.,Community,25,
+Life Insurance Matures; Collect $100.,Community,100,
+"You are assessed for street repairs: $40 per house, $115 per Hotel.",Community,45 or 115,
+Grand Opera Opening; Collect $50 from every player.,Community,50 for each player,
+You Inherit $100.,Community,$100 ,
+"Take a ride on the reading railroad, if you pass go collect $200.",Chance,,Reading Railroad
+"Advance to the nearest Railroad. If the railroad is owned pay the owner twice the rent. If the railroad is unowned, you may purchase it from the bank. (If you Pass Go collect $200.)",Chance,,Nearest Railroad
+Take a walk on the Boardwalk. Advance token to Boardwalk.,Chance,,Boardwalk
+"Advance token to the nearest Railroad. If the railroad is owned pay the owner twice the rent. If the railroad is unowned, you may purchase it from the bank. (If you Pass Go collect $200.)",Chance,,Nearest Railroad
+ Make general repairs on all your properties. For each house pay $25; for each hotel pay $100.,Chance,,
+"Advance to the nearest utility. If owned, pay the owner 15 times the amount thrown. If unowned, you may purchase it from the bank.",Chance,,Nearest Utility

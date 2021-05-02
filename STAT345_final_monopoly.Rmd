@@ -163,9 +163,8 @@ position[1] <- next_railraod
 position[[1]]
 ```
 
-#NEW IDEAS (04-26-2021)
-   #FUNCTIONS: Combined previous dice roll ideas; Check Hand; Go to Jail; In Jail/Exiting Jail
-   #CONSIDERATIONS: I think a simple dice roll function that can be applied to more complex situations might be useful; explained in greater detail below.
+#UPDATED IDEAS: JAIL (05-02-2021)
+  #New Jail Idea; better jail function
 
 #Check Player's Hand:
 ```{r}
@@ -175,35 +174,50 @@ Check_Hand <- function(player_identifier)
 }
 ```
 
-#Go to Jail:
+#Old Go to Jail:
 ```{r}
 #unsure how we want to create a jail; idea is that we can have at most four players in jail at once, so we can assign each element of a list of cardinality 4 a unique position which corresponds to the player's number.
 
 jail <- list(NA, NA, NA, NA)
 
-Go_to_Jail <- function(player_identifier)
+Old_Go_to_Jail <- function(playerID)
 {
-  jail[[player_identifier]] <- player_identifier
-  jail
-  #end turn
+  jail[[playerID]] <- playerID
+  return(jail)
+}
+```
+
+#Go to Jail:
+```{r}
+#unsure how we want to create a jail; idea is that we can have at most four players in jail at once, so we can assign each element of a list of cardinality 4 a unique position which corresponds to the player's number.
+
+Go_to_Jail <- function(playerID)
+{
+  position[[playerID]] <- 11
+  user_place <- position[[playerID]]
+  
+  return(user_place)
 }
 ```
 
 #In Jail/Exiting Jail:
 ```{r}
-#Needs additional work to count how long someone has been in jail for. 
+#Needs additional work to count how long someone has been in jail for.
+#Currently works for all cases, but there is an issue updating the location of the player upon exiting jail. (Maybe not an issue, as we only care about their first roll upon exiting...issue appears with multiple iterations)
+#Issue fied by fixing position of player i = 11. 
 
-In_Out_Jail <- function(player_identifer)
+In_Out_Jail <- function(player_identifer, counter = 0)
 {
+  position[player_identifer] <- 11
+  
   hand <- Check_Hand(player_identifer)
   card <- hand %>% select(Get.Out.of.Jail.Free) 
   
   if(is.na(card) == FALSE)
   {
-    card[[1]] <-NA
+    players[player_identifer, ]$Get.Out.of.Jail.Free <- NA
     print(paste0("Player", player_identifer, " uses a 'Get Out of Jail Free Card.'"))
-    #return player to just visiting
-    #initiate new roll
+    roll_to_move_player(playerID = player_identifer, player_position = 11)
   }
   
   else
@@ -212,32 +226,52 @@ In_Out_Jail <- function(player_identifer)
     
     if(funds >= 500)
     {
-      funds[[1]] <- funds[[1]] - 50
-      
+      players[player_identifer, ]$Bank <- players[player_identifer, ]$Bank - 50
       print(paste0("Player", player_identifer, " pays M$ 50 to exit jail."))
-      #return player to just visiting
-      #initiate new roll
+      roll_to_move_player(playerID = player_identifer, player_position = 11)
     }
     
     else
     {
-      roll <- new_roll_dice()
+      roll <- roll_dice()
       
       if(roll[1] == roll[2])
       { 
         print(paste0("Player", player_identifer, " rolls doubles to exit jail."))
-        #return player to just visiting
-        #initiate new roll
+        roll_to_move_player(playerID = player_identifer, player_position = 11)
       }
       
       else
       {
-        print(paste0("Player", player_identifer, " remains in jail."))
-        Go_to_Jail(player_identifer)
+        if(counter < 2)
+        {
+          print(paste0("Player", player_identifer, " remains in jail."))
+          In_Out_Jail(player_identifer, counter + 1)
+        }
+        
+        else
+        {
+          funds <- hand %>% select(Bank)
+    
+          if(funds >= 50)
+          {
+            funds[[1]] <- funds[[1]] - 50
+            
+            print(paste0("Player", player_identifer, " pays M$ 50 to exit jail."))
+            roll_to_move_player(playerID = player_identifer, player_position = 11)
+          }
+          
+          else
+          {
+            print(paste0("Player", player_identifer, " is bankrupted."))
+            #remove player from player dataset?
+          }
+        }
       }
     }
-    
   }
+  
+  invisible(players)
 }
 ```
 

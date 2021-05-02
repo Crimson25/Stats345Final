@@ -131,37 +131,38 @@ ggplot(frequency_data, aes(1:40, value)) + geom_col()
 
 #chance card: finding the neareset railraod
 ```{r}
-railroad_num <- c(6, 15, 25, 35)
+#railroad_num <- c(6, 15, 25, 35)
 
-position[1] <- 40
-position[[1]]
+#position[1] <- 40
+#position[[1]]
 
-difference <- railroad_num - position[[1]]
-difference
+#difference <- railroad_num - position[[1]]
+#difference
 
-maxnegative <- function(x){
-  min(x)
-}
-minpositive <- function(x){
-  min(x[x > 0])
-}
+#maxnegative <- function(x){
+  #min(x)
+#}
+#minpositive <- function(x){
+  #min(x[x > 0])
+#}
 
-if (all(difference < 0)){
-   print("All values are non-negatives!")
-  distance <- maxnegative(difference)
+#if (all(difference < 0)){
+   #print("All values are non-negatives!")
+  #distance <- maxnegative(difference)
   
-}else{
-  distance <- minpositive(difference)
-}
+#}else{
+  #distance <- minpositive(difference)
+#}
 
-distance
+#distance
 
-next_railraod <- distance + position[[1]]
+#next_railraod <- distance + position[[1]]
 
-position[1] <- next_railraod
+#position[1] <- next_railraod
 
-position[[1]]
+#position[[1]]
 ```
+#see lines 495-564 for updated function
 
 #UPDATED IDEAS: JAIL (05-02-2021)
   #New Jail Idea; better jail function
@@ -377,11 +378,12 @@ roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
     
     else
     {
-      print(counter)
+      #print(counter)
       totalDice <- sum(roll)
   
-      if(counter == 0 || counter == 1)
+      if(counter == 0)
       {
+        #|| counter == 1?
         print(paste0("Player", playerID, " rolls doubles!", " The sum of their roll is: ", totalDice))
         new_position <- moving(playerID, totalDice)
         player_position <- new_position
@@ -390,7 +392,8 @@ roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
       
       else
       {
-        print(paste0("Player", playerID, " rolls again and rolls: ", totalDice))
+        #print(paste0("Player", playerID, " rolls again and rolls: ", totalDice))
+        print(paste0("Player", playerID, " rolls doubles again!", " The sum of their roll is: ", totalDice))
         new_position <- moving_doubles(playerID, totalDice, p)
         player_position <- new_position
         #print(player_position)
@@ -428,4 +431,136 @@ position[1]
 
 #position[1] <- 1
 
+```
+
+#NEW SECTION: CHANCE AND COMMUNITY CHEST (05-02-2021)
+
+#Landing on Chance or Community Chest:
+```{r}
+chance_or_community_chest <- function(playerID)
+{
+  player_position <- position[[playerID]]
+  
+  chance_locations <- which(spaces %in% "Chance")
+  community_chest_locations <- which(spaces %in% "Community Chest")
+  
+  if(player_position %in% chance_locations)
+  {
+    chance_cards <- action_cards %>% filter(Card.Type %in% "Chance")
+    rand_num <- sample(1:15, 1, replace = TRUE)
+    specific_action <- chance_cards[rand_num,]
+    print(paste0("Your card reads: ", specific_action$Objective))
+    location <- player_position
+    
+    if(specific_action$Places != "")
+    {
+      problem_cards <- c("Nearest Utility", "Nearest Railroad", "-3")
+      
+      if(specific_action$Places %in% problem_cards)
+      {
+        #print(specific_action$Places)
+        location <- action_card_movement(1, player_position, specific_action$Places)
+      }
+      else
+      {
+        #print(specific_action$Places)
+        location <- which(spaces %in% specific_action$Places)
+      }
+    }
+  }
+   
+  if(player_position %in% community_chest_locations)
+  {
+    community_cards <- action_cards %>% filter(Card.Type %in% "Community")
+    rand_num <- sample(1:16, 1, replace = TRUE)
+    specific_action <- community_cards[rand_num,]
+    print(paste0("Your card reads: ", specific_action$Objective))
+    location <- player_position
+    
+    if(specific_action$Places != "")
+    {
+      print(specific_action$Places)
+      location <- which(spaces %in% specific_action$Places)
+    }
+  }
+  
+  if((player_position %in% chance_locations) == FALSE && (player_position %in% community_chest_locations) == FALSE)
+  {
+    location <- player_position
+  }
+  
+  return(location)
+}
+
+```
+
+#Action Card Movement:
+```{r}
+#a) Distance Functions
+
+maxnegative <- function(x)
+{
+  min(x)
+}
+
+minpositive <- function(x)
+{
+  min(x[x > 0])
+}
+
+#b) Move to Nearest Railroad 
+
+action_card_movement <- function(playerID, player_location, card_text)
+{
+  rail_or_util_spaces <- c()
+  
+  if(card_text == "Nearest Railroad")
+  {
+    rail_or_util_spaces <- c(6, 16, 26, 36)
+  }
+  
+  if(card_text == "Nearest Utility")
+  {
+    rail_or_util_spaces <- c(13, 29)
+  }
+  
+  if(card_text == "-3")
+  {
+    minus_3 <- player_location - 3
+    
+    if(minus_3 <= 0)
+    {
+      minus_3 <- minus_3 + 40
+    }
+    
+    return(minus_3)
+  }
+  
+  if((card_text != "Nearest Utility") && (card_text != "Nearest Railroad") && (card_text != "-3"))
+  {
+    print("You shouldn't be in here!")
+    return(player_location)
+  }
+  
+  #player_position <- position[[playerID]]
+  
+  difference <- rail_or_util_spaces - player_location
+  
+  if (all(difference < 0))
+  {
+    #print("All values are negatives!")
+    distance <- maxnegative(difference)
+  }
+  
+  else
+  {
+    distance <- minpositive(difference)
+  }
+  
+  #print(distance)
+  
+  nearest <- distance + player_location
+
+  return(nearest)
+}
 ```

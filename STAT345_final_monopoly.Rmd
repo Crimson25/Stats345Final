@@ -30,6 +30,7 @@ util <- read.csv("Utilities Dataset CSV.csv")
 action_cards <- read.csv("Action_Cards_Git.csv")
 
 #make dataframes more tidy:
+library(tidyverse)
 deeds <- deeds %>% select(-"Identifier")
 util <- util %>% select("Utility.Company", "Purchase.Price", "Rent.with.1.Utility", "Rent.with.2.Utility", "Mortgage.Value")
 action_cards <- action_cards %>% select(-Money)

@@ -309,41 +309,80 @@ differing_dice <- function()
 }
 ```
 
-#Moving Functions:
+#Updated Moving Functions: (05-03-2021) 
+#(Note: You will need to run chance_or_community_chest() prior to running these functions.)
 ```{r}
+#1) moving() allows us to move a player from their starting position. We found that using only moving() creates an issue for movement, as the function does not "remember" the previous roll when adjusting movement.
+
+action_locations <- which(spaces %in% c("Chance", "Community Chest"))
+
 moving <- function(playerID, spaces_to_move)
 {
   #Player's position on board + dice roll amount:
   position[[playerID]] <- position[[playerID]] + spaces_to_move
   user_place <- position[[playerID]]
   
-  #Restarts Count after Passing GO:
-  if(user_place >= 41)
+  if(user_place %in% action_locations)
   {
-    user_place <- user_place - 40
+    pi <- playerID 
+    user_place <- chance_or_community_chest(pi, user_place)
+    
+    if(user_place >= 41)
+    {
+      user_place <- user_place - 40
+    }
   }
   
-  print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
-  #position[playerID] <- user_place
+  else
+  {
+    #Restarts Count after Passing GO:
+    if(user_place >= 41)
+    {
+      user_place <- user_place - 40
+    }
+    
+    print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
+    #position[playerID] <- user_place
+  }
+    
   return(user_place)
 }
 ```
 
 ```{r}
+#2) moving_doubles() is used when multiple dice rolls need to be considered. This stores player's last location and moves the player from their last known location.
+
 moving_doubles <- function(playerID, spaces_to_move, player_location)
 {
   position[[playerID]] <- player_location
   position[[playerID]] <- position[[playerID]] + spaces_to_move
   user_place <- position[[playerID]]
   
-  #Restarts Count after Passing GO:
-  if(user_place >= 41)
+  #print(user_place)
+  
+  if(user_place %in% action_locations)
   {
-    user_place <- user_place - 40
+    pi <- playerID 
+    user_place <- chance_or_community_chest(pi, user_place)
+    
+    if(user_place >= 41)
+    {
+      user_place <- user_place - 40
+    }
   }
   
-  print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
-  #position[playerID] <- user_place
+  else
+  {
+    #Restarts Count after Passing GO:
+    if(user_place >= 41)
+    {
+      user_place <- user_place - 40
+    }
+    
+    print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
+    #position[playerID] <- user_place
+  }
+    
   return(user_place)
 }
 ```
@@ -351,9 +390,9 @@ moving_doubles <- function(playerID, spaces_to_move, player_location)
 #Rolls for Movement:
 ```{r}
 #The following function rolls the dice for movement purposes; there are a couple parts worth noting:
-  #The roll_to_move_player function uses three functions: roll_dice, moving, and moving_doubles
-  #There are several cases to consider, but they are all designed to account for the count of the doubles and player location after each movement. 
-  #The moving function and moving doubles function can likely be combined by adding a count argument and using an if/else statement to update player location based on the presence of doubles.
+  #The roll_to_move_player function uses four functions: roll_dice, moving, moving_doubles, and chance_or_community_chest.
+  #There are several cases to consider, but they are all designed to account for the count of the doubles and player location after each movement.
+  #Minor movement error when "Going to Jail"; moves to correct space, but continues to move.
 
 roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
 {
@@ -373,7 +412,8 @@ roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
     {
       print(paste0("Player", playerID, " is sent to Jail for rolling too many doubles.", " The sum of their roll is: ", totalDice))
       #moving()
-      return()
+      #Go_to_Jail(playerID) #(Go_to_Jail implimented in following section)
+      #return()
     }
     
     else

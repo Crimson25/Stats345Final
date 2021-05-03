@@ -95,6 +95,36 @@ frequency_data
 ggplot(frequency_data, aes(1:40, value)) + geom_col()
 ```
 
+#heatmap simulation and graph
+```{r}
+library(tidyverse)
+
+#spot_frequency <- simulation(5)
+frequency_data = 0
+for(i in 2:40){
+  frequency_data[i] = 0
+}
+for(i in  1:1000){
+  temp <- roll_to_move_player(1)
+  position[[1]] <- temp
+  frequency_data[temp] <- frequency_data[temp] + 1
+}
+monopoly_board_matrix <- matrix(data = c(frequency_data[21], frequency_data[22], frequency_data[23], frequency_data[24], frequency_data[25], frequency_data[26], frequency_data[27], frequency_data[28], frequency_data[29], frequency_data[30], frequency_data[31], frequency_data[20],0,0,0,0,0,0,0,0,0, frequency_data[32], 
+frequency_data[19],0,0,0,0,0,0,0,0,0, frequency_data[33], 
+frequency_data[18],0,0,0,0,0,0,0,0,0, frequency_data[34],
+frequency_data[17],0,0,0,0,0,0,0,0,0, frequency_data[35], 
+frequency_data[16],0,0,0,0,0,0,0,0,0, frequency_data[36], 
+frequency_data[15],0,0,0,0,0,0,0,0,0, frequency_data[37],
+frequency_data[14],0,0,0,0,0,0,0,0,0, frequency_data[38], 
+frequency_data[13],0,0,0,0,0,0,0,0,0, frequency_data[39], 
+frequency_data[12],0,0,0,0,0,0,0,0,0, frequency_data[40],
+frequency_data[11], frequency_data[10], frequency_data[9], frequency_data[8], frequency_data[7], frequency_data[6], frequency_data[5], frequency_data[4], frequency_data[3], frequency_data[2], frequency_data[1]), nrow = 11, ncol = 11)
+heatmap<-heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none")
+library(ggplot2)
+#df = as.data.frame(frequency_data)
+#ggplot(df,(aes(1:40,1))) + geom_tile(aes(fill = frequency_data))
+```
+
 ```{r}
 #more complex dice roll that factors in double rolls
   dice_roll <- function(){

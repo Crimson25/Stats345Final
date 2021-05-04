@@ -192,8 +192,6 @@ library(ggplot2)
 
 #position[[1]]
 ```
-#see lines 495-564 for updated function
-
 
 #REFINED FUCNTIONS: (05-04-2021)
   #Updated all previous functions to work for the condition: "Go to Jail."
@@ -234,7 +232,7 @@ differing_dice <- function()
 
 ```
 
-#Moving Before Rolling Doubles:
+#Moving Before Relocation of Player:
 ```{r}
 #1) moving() allows us to move a player from their starting position. We found that using only moving() creates an issue for movement, as the function does not "remember" the previous roll when adjusting movement.
 
@@ -450,6 +448,7 @@ position[1]
 #position[1] <- 1
 ```
 
+
 #SECTION 02: JAIL FUNCTIONS: (05-04-2021)
 
 #Check Player's Hand:
@@ -542,6 +541,7 @@ In_Out_Jail <- function(player_identifer, counter = 0)
   #invisible(players)
 }
 ```
+
 
 #SECTION 03: ACTION CARDS (05-04-2021)
 
@@ -700,20 +700,5 @@ chance_or_community_chest <- function(playerID, player_position)
 }
 
 ```
-
-
-#UPDATED IDEAS: JAIL (05-02-2021) (OLD)
-  #New Jail Idea; better jail function
-
-
-
-
-
-#NEW COMMIT (04-29-2021) (OLD)
-  #Note: Movement was tested with a list instead of a dictonary, as the install for the library(dict) kept erroring out on my computer; there did not appear to be any significant changes in the structure of the code however, and it is therefore my belief the function will work for the dictonary too. (I can share the code for the list later if that is needed.)
-
-
-
-#NEW SECTION: CHANCE AND COMMUNITY CHEST (05-02-2021) (OLD)
 
 

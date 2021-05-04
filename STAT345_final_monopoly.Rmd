@@ -194,137 +194,31 @@ library(ggplot2)
 ```
 #see lines 495-564 for updated function
 
-#UPDATED IDEAS: JAIL (05-02-2021)
-  #New Jail Idea; better jail function
 
-#Check Player's Hand:
+#REFINED FUCNTIONS: (05-04-2021)
+  #Updated all previous functions to work for the condition: "Go to Jail."
+  #Fixed a bug in the moving() and moving_doubles() functions
+
+#SECTION 01: MOVEMENT (05-04-2021)
+
+#Various Roll Dice Functions:
 ```{r}
-Check_Hand <- function(player_identifier)
-{
-  Players_Hands_Dataset[player_identifier,]
-}
-```
 
-#Old Go to Jail:
-```{r}
-#unsure how we want to create a jail; idea is that we can have at most four players in jail at once, so we can assign each element of a list of cardinality 4 a unique position which corresponds to the player's number.
+#All functions mimic rolling dice in a game of monopoly. roll_dice() is used for regular dice movement; force_doubles() and differing_dice() were used for testing. 
 
-jail <- list(NA, NA, NA, NA)
-
-Old_Go_to_Jail <- function(playerID)
-{
-  jail[[playerID]] <- playerID
-  return(jail)
-}
-```
-
-#Go to Jail:
-```{r}
-#unsure how we want to create a jail; idea is that we can have at most four players in jail at once, so we can assign each element of a list of cardinality 4 a unique position which corresponds to the player's number.
-
-Go_to_Jail <- function(playerID)
-{
-  position[[playerID]] <- 11
-  user_place <- position[[playerID]]
-  
-  return(user_place)
-}
-```
-
-#In Jail/Exiting Jail:
-```{r}
-#Needs additional work to count how long someone has been in jail for.
-#Currently works for all cases, but there is an issue updating the location of the player upon exiting jail. (Maybe not an issue, as we only care about their first roll upon exiting...issue appears with multiple iterations)
-#Issue fied by fixing position of player i = 11. 
-
-In_Out_Jail <- function(player_identifer, counter = 0)
-{
-  position[player_identifer] <- 11
-  
-  hand <- Check_Hand(player_identifer)
-  card <- hand %>% select(Get.Out.of.Jail.Free) 
-  
-  if(is.na(card) == FALSE)
-  {
-    players[player_identifer, ]$Get.Out.of.Jail.Free <- NA
-    print(paste0("Player", player_identifer, " uses a 'Get Out of Jail Free Card.'"))
-    roll_to_move_player(playerID = player_identifer, player_position = 11)
-  }
-  
-  else
-  {
-    funds <- hand %>% select(Bank)
-    
-    if(funds >= 500)
-    {
-      players[player_identifer, ]$Bank <- players[player_identifer, ]$Bank - 50
-      print(paste0("Player", player_identifer, " pays M$ 50 to exit jail."))
-      roll_to_move_player(playerID = player_identifer, player_position = 11)
-    }
-    
-    else
-    {
-      roll <- roll_dice()
-      
-      if(roll[1] == roll[2])
-      { 
-        print(paste0("Player", player_identifer, " rolls doubles to exit jail."))
-        roll_to_move_player(playerID = player_identifer, player_position = 11)
-      }
-      
-      else
-      {
-        if(counter < 2)
-        {
-          print(paste0("Player", player_identifer, " remains in jail."))
-          In_Out_Jail(player_identifer, counter + 1)
-        }
-        
-        else
-        {
-          funds <- hand %>% select(Bank)
-    
-          if(funds >= 50)
-          {
-            funds[[1]] <- funds[[1]] - 50
-            
-            print(paste0("Player", player_identifer, " pays M$ 50 to exit jail."))
-            roll_to_move_player(playerID = player_identifer, player_position = 11)
-          }
-          
-          else
-          {
-            print(paste0("Player", player_identifer, " is bankrupted."))
-            #remove player from player dataset?
-          }
-        }
-      }
-    }
-  }
-  
-  invisible(players)
-}
-```
-
-#NEW COMMIT (04-29-2021)
-  #Note: Movement was tested with a list instead of a dictonary, as the install for the library(dict) kept erroring out on my computer; there did not appear to be any significant changes in the structure of the code however, and it is therefore my belief the function will work for the dictonary too. (I can share the code for the list later if that is needed.)
-
-#Simple Roll Dice:
-```{r}
 roll_dice <- function()
 {
   dice <- sample(1:6, 2, replace = TRUE)
   return(dice)
 }
-```   
 
-#Force Doubles / Force Differing Dice
-```{r}
+
 force_doubles <- function()
 {
   dice <- sample(1:1, 2, replace = TRUE)
   return(dice)
 }
+
 
 differing_dice <- function()
 {
@@ -337,10 +231,10 @@ differing_dice <- function()
   
   return(dice)
 }
+
 ```
 
-#Updated Moving Functions: (05-03-2021) 
-#(Note: You will need to run chance_or_community_chest() prior to running these functions.)
+#Moving Before Rolling Doubles:
 ```{r}
 #1) moving() allows us to move a player from their starting position. We found that using only moving() creates an issue for movement, as the function does not "remember" the previous roll when adjusting movement.
 
@@ -352,6 +246,12 @@ moving <- function(playerID, spaces_to_move)
   position[[playerID]] <- position[[playerID]] + spaces_to_move
   user_place <- position[[playerID]]
   
+  #Restarts Count after Passing GO:
+  if(user_place >= 41)
+  {
+    user_place <- user_place - 40
+  }
+  
   if(user_place %in% action_locations)
   {
     pi <- playerID 
@@ -365,12 +265,6 @@ moving <- function(playerID, spaces_to_move)
   
   else
   {
-    #Restarts Count after Passing GO:
-    if(user_place >= 41)
-    {
-      user_place <- user_place - 40
-    }
-    
     print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
     #position[playerID] <- user_place
   }
@@ -379,8 +273,9 @@ moving <- function(playerID, spaces_to_move)
 }
 ```
 
+#Moving After Relocation of Player:
 ```{r}
-#2) moving_doubles() is used when multiple dice rolls need to be considered. This stores player's last location and moves the player from their last known location.
+#2) moving_doubles() is used when multiple dice rolls (i.e. a relocation of a player) need(s) to be considered. This stores player's last location and moves the player from their last known location.
 
 moving_doubles <- function(playerID, spaces_to_move, player_location)
 {
@@ -390,6 +285,12 @@ moving_doubles <- function(playerID, spaces_to_move, player_location)
   
   #print(user_place)
   
+  #Restarts count after passing GO
+  if(user_place >= 41)
+  {
+    user_place <- user_place - 40
+  }
+  
   if(user_place %in% action_locations)
   {
     pi <- playerID 
@@ -403,12 +304,6 @@ moving_doubles <- function(playerID, spaces_to_move, player_location)
   
   else
   {
-    #Restarts Count after Passing GO:
-    if(user_place >= 41)
-    {
-      user_place <- user_place - 40
-    }
-    
     print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
     #position[playerID] <- user_place
   }
@@ -417,58 +312,110 @@ moving_doubles <- function(playerID, spaces_to_move, player_location)
 }
 ```
 
+#Jail Roll:
+```{r}
+
+jail_roll <- function(playerID, counter = 1, player_position = 11, type_of_roll = roll_dice())
+{
+  #position[[playerID]] <- player_position
+  p <- player_position
+  
+  roll <- type_of_roll
+  
+  if(roll[1] == roll[2])
+  {
+    if(counter == 3)
+    {
+      print(paste0("Player", playerID, " rolls doubles for a third time!", " The sum of their roll is: ", totalDice))
+      print(paste0("Player", playerID, " returns to Jail for rolling too many doubles."))
+      #Go_to_Jail(playerID) #(Go_to_Jail implimented in following section)
+    }
+    
+    else
+    {
+      totalDice <- sum(roll)
+  
+      if(counter == 1)
+      {
+        print(paste0("Player", playerID, " rolls doubles!", " The sum of their roll is: ", totalDice))
+        new_position <- moving_doubles(playerID, totalDice, 11)
+        player_position <- new_position
+      }
+      
+      else
+      {
+        #print(roll)
+        print(paste0("Player", playerID, " rolls doubles again!", " The sum of their roll is: ", totalDice))
+        new_position <- moving_doubles(playerID, totalDice, p)
+        player_position <- new_position
+      }
+      
+      jail_roll(playerID, counter + 1, new_position)
+    }
+  }
+  
+  else
+  {
+    totalDice <- sum(roll)
+    
+    if(counter == 1)
+    {
+      print(paste0("Player", playerID, " rolls: ", totalDice))
+    }
+    
+    else
+    {
+      print(paste0("Player", playerID, " rolls again and rolls: ", totalDice))
+    }
+    
+    moving_doubles(playerID, totalDice, p)
+  }
+}
+```
+
 #Rolls for Movement:
 ```{r}
 #The following function rolls the dice for movement purposes; there are a couple parts worth noting:
   #The roll_to_move_player function uses four functions: roll_dice, moving, moving_doubles, and chance_or_community_chest.
   #There are several cases to consider, but they are all designed to account for the count of the doubles and player location after each movement.
-  #Minor movement error when "Going to Jail"; moves to correct space, but continues to move.
+  #Minor movement error when "Going to Jail"; moves to correct space, but continues to move. 
+    #Jail is working close to properly now.
 
-roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
+roll_to_move_player <- function(playerID, counter = 0, player_position = 1, type_of_roll = roll_dice())
 {
-  #print(player_position)
   p <- player_position
-  #print(p)
   
-  
-  roll <- roll_dice()
-  #roll <- force_doubles()
-  #roll <- differing_dice()
-  #roll <- c(3, 4)
+  roll <- type_of_roll
   
   if(roll[1] == roll[2])
   {
     if(counter == 2)
     {
-      print(paste0("Player", playerID, " is sent to Jail for rolling too many doubles.", " The sum of their roll is: ", totalDice))
-      #moving()
-      #Go_to_Jail(playerID) #(Go_to_Jail implimented in following section)
-      #return()
+      totalDice <- sum(roll)
+      
+      print(paste0("Player", playerID, " rolls doubles for a third time!", " The sum of their roll is: ", totalDice))
+      print(paste0("Player", playerID, " is sent to Jail for rolling too many doubles."))
+      In_Out_Jail(playerID)
     }
     
     else
     {
-      #print(counter)
       totalDice <- sum(roll)
   
       if(counter == 0)
       {
-        #|| counter == 1?
         print(paste0("Player", playerID, " rolls doubles!", " The sum of their roll is: ", totalDice))
         new_position <- moving(playerID, totalDice)
         player_position <- new_position
-        #print(player_position)
       }
       
       else
       {
-        #print(paste0("Player", playerID, " rolls again and rolls: ", totalDice))
+        #print(roll)
         print(paste0("Player", playerID, " rolls doubles again!", " The sum of their roll is: ", totalDice))
         new_position <- moving_doubles(playerID, totalDice, p)
         player_position <- new_position
-        #print(player_position)
       }
-    
       
       roll_to_move_player(playerID, counter + 1, new_position)
     }
@@ -477,6 +424,7 @@ roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
   else
   {
     totalDice <- sum(roll)
+    
     if(counter == 0)
     {
       print(paste0("Player", playerID, " rolls: ", totalDice))
@@ -488,85 +436,121 @@ roll_to_move_player <- function(playerID, counter = 0, player_position = 1)
       print(paste0("Player", playerID, " rolls again and rolls: ", totalDice))
       moving_doubles(playerID, totalDice, p)
     }
-    
   }
 }
+
 ```
 
 #Move Player 1 for Testing:
 ```{r}
-position[1]
 position[1] <- roll_to_move_player(1)
 position[1]
+#spaces[[position[[1]]]]
 
 #position[1] <- 1
-
 ```
 
-#NEW SECTION: CHANCE AND COMMUNITY CHEST (05-02-2021)
+#SECTION 02: JAIL FUNCTIONS: (05-04-2021)
 
-#Landing on Chance or Community Chest:
+#Check Player's Hand:
 ```{r}
-chance_or_community_chest <- function(playerID)
+Check_Hand <- function(player_identifier)
 {
-  player_position <- position[[playerID]]
+  players[player_identifier,]
+}
+```
+
+#In Jail/Exiting Jail:
+```{r}
+#Currently trying to adjust the jail function to be implemented under the moving doubles function.  
+
+In_Out_Jail <- function(player_identifer, counter = 0)
+{
+  position[player_identifer] <- 11
   
-  chance_locations <- which(spaces %in% "Chance")
-  community_chest_locations <- which(spaces %in% "Community Chest")
-  
-  if(player_position %in% chance_locations)
+  if(counter == 0)
   {
-    chance_cards <- action_cards %>% filter(Card.Type %in% "Chance")
-    rand_num <- sample(1:15, 1, replace = TRUE)
-    specific_action <- chance_cards[rand_num,]
-    print(paste0("Your card reads: ", specific_action$Objective))
-    location <- player_position
+    print(paste0("Player", player_identifer, " is now in jail."))
+    In_Out_Jail(player_identifer, counter + 1)
+  }
+  
+  else
+  {
+    hand <- Check_Hand(player_identifer)
+    card <- hand %>% select(Get.Out.of.Jail.Free) 
     
-    if(specific_action$Places != "")
+    if(is.na(card) == FALSE)
     {
-      problem_cards <- c("Nearest Utility", "Nearest Railroad", "-3")
+      players[player_identifer, ]$Get.Out.of.Jail.Free <- NA
+      print(paste0("Player", player_identifer, " uses a 'Get Out of Jail Free Card.'"))
+      jail_roll(player_identifer)
+    }
+    
+    else
+    {
+      funds <- hand %>% select(Bank)
       
-      if(specific_action$Places %in% problem_cards)
+      if(funds >= 500)
       {
-        #print(specific_action$Places)
-        location <- action_card_movement(1, player_position, specific_action$Places)
+        players[player_identifer, ]$Bank <- players[player_identifer, ]$Bank - 50
+        print(paste0("Player", player_identifer, " pays $50 to exit jail."))
+        jail_roll(player_identifer)
       }
+      
       else
       {
-        #print(specific_action$Places)
-        location <- which(spaces %in% specific_action$Places)
+        roll <- roll_dice()
+        
+        if(roll[1] == roll[2])
+        { 
+          print(paste0("Player", player_identifer, " rolls doubles to exit jail."))
+          jail_roll(player_identifer)
+        }
+        
+        else
+        {
+          if(counter < 2)
+          {
+            print(paste0("Player", player_identifer, " remains in jail."))
+            In_Out_Jail(player_identifer, counter + 1)
+          }
+          
+          else
+          {
+            funds <- hand %>% select(Bank)
+      
+            if(funds >= 50)
+            {
+              funds[[1]] <- funds[[1]] - 50
+              
+              print(paste0("Player", player_identifer, " pays $50 to exit jail."))
+              jail_roll(player_identifer)
+            }
+            
+            else
+            {
+              print(paste0("Player", player_identifer, " is bankrupted."))
+              #remove player from player dataset?
+            }
+          }
+        }
       }
     }
   }
-   
-  if(player_position %in% community_chest_locations)
-  {
-    community_cards <- action_cards %>% filter(Card.Type %in% "Community")
-    rand_num <- sample(1:16, 1, replace = TRUE)
-    specific_action <- community_cards[rand_num,]
-    print(paste0("Your card reads: ", specific_action$Objective))
-    location <- player_position
-    
-    if(specific_action$Places != "")
-    {
-      print(specific_action$Places)
-      location <- which(spaces %in% specific_action$Places)
-    }
-  }
   
-  if((player_position %in% chance_locations) == FALSE && (player_position %in% community_chest_locations) == FALSE)
-  {
-    location <- player_position
-  }
-  
-  return(location)
+  #return(exit_roll)
+  #invisible(players)
 }
-
 ```
+
+#SECTION 03: ACTION CARDS (05-04-2021)
 
 #Action Card Movement:
 ```{r}
-#a) Distance Functions
+
+#Helper Functions for chance_or_community_chest()
+
+#a) Distance Functions:
 
 maxnegative <- function(x)
 {
@@ -578,7 +562,7 @@ minpositive <- function(x)
   min(x[x > 0])
 }
 
-#b) Move to Nearest Railroad 
+#b) Movement Based on Action Card Description: 
 
 action_card_movement <- function(playerID, player_location, card_text)
 {
@@ -606,7 +590,13 @@ action_card_movement <- function(playerID, player_location, card_text)
     return(minus_3)
   }
   
-  if((card_text != "Nearest Utility") && (card_text != "Nearest Railroad") && (card_text != "-3"))
+  if(card_text == "Jail / Just Visiting")
+  {
+    location_after_exiting_jail <- In_Out_Jail(playerID)
+    return(location_after_exiting_jail)
+  }
+  
+  if((card_text != "Nearest Utility") && (card_text != "Nearest Railroad") && (card_text != "-3") && (card_text != "Jail / Just Visiting"))
   {
     print("You shouldn't be in here!")
     return(player_location)
@@ -634,3 +624,96 @@ action_card_movement <- function(playerID, player_location, card_text)
   return(nearest)
 }
 ```
+
+
+#Landing on Chance:
+```{r} 
+
+chance_or_community_chest <- function(playerID, player_position)
+{
+  chance_locations <- which(spaces %in% "Chance")
+  community_chest_locations <- which(spaces %in% "Community Chest")
+  
+  #added:, "Jail / Just Visiting"
+  problem_cards <- c("Nearest Utility", "Nearest Railroad", "-3", "Jail / Just Visiting")
+  
+  if(player_position %in% chance_locations)
+  {
+    chance_cards <- action_cards %>% filter(Card.Type %in% "Chance")
+    rand_num <- sample(1:15, 1, replace = TRUE)
+    specific_action <- chance_cards[rand_num,]
+    print(paste0("Player", playerID, " lands on Chance and draws a Chance card."))
+    print(paste0("Their card reads: ", specific_action$Objective))
+    location <- player_position
+    
+    if(specific_action$Places != "")
+    {
+      #removed problem cards here
+      
+      if(specific_action$Places %in% problem_cards)
+      {
+        #print(specific_action$Places)
+        location <- action_card_movement(1, player_position, specific_action$Places)
+      }
+      
+      else
+      {
+        #print(specific_action$Places)
+        location <- which(spaces %in% specific_action$Places)
+      }
+    }
+  }
+   
+  if(player_position %in% community_chest_locations)
+  {
+    community_cards <- action_cards %>% filter(Card.Type %in% "Community")
+    rand_num <- sample(1:16, 1, replace = TRUE)
+    specific_action <- community_cards[rand_num,]
+    print(paste0("Player", playerID, " lands on Community Chest and draws a Community Chest card."))
+    print(paste0("Their card reads: ", specific_action$Objective))
+    location <- player_position
+    
+    if(specific_action$Places != "")
+    {
+      #removed problem cards here
+      
+      if(specific_action$Places %in% problem_cards)
+      {
+        #print(specific_action$Places)
+        location <- action_card_movement(1, player_position, specific_action$Places)
+      }
+      
+      else
+      {
+        #print(specific_action$Places)
+        location <- which(spaces %in% specific_action$Places)
+      }
+    }
+  }
+  
+  if((player_position %in% chance_locations) == FALSE && (player_position %in% community_chest_locations) == FALSE)
+  {
+    location <- player_position
+  }
+  
+  return(location)
+}
+
+```
+
+
+#UPDATED IDEAS: JAIL (05-02-2021) (OLD)
+  #New Jail Idea; better jail function
+
+
+
+
+
+#NEW COMMIT (04-29-2021) (OLD)
+  #Note: Movement was tested with a list instead of a dictonary, as the install for the library(dict) kept erroring out on my computer; there did not appear to be any significant changes in the structure of the code however, and it is therefore my belief the function will work for the dictonary too. (I can share the code for the list later if that is needed.)
+
+
+
+#NEW SECTION: CHANCE AND COMMUNITY CHEST (05-02-2021) (OLD)
+
+

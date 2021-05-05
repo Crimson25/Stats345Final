@@ -65,6 +65,8 @@ board <- vector(mode = "list", length = 40)
 for( i in 1:40){
   board[[i]] <- 0
 }
+
+names(board) <- prop$Properties
 ```
 
 #counting amount of times a space is landed on:
@@ -75,25 +77,32 @@ num <- position[[1]]
 simulation <- function(times){
   
   for(i in 1:times){
-position[1] <-rollDice(0,1)
-num <- position[[1]]
-board[[num]] <- board[[num]] + 1
+    position[1] <- dice_roll()
+    num <- position[[1]]
+    board[[num]] <- board[[num]] + 1
   }
   board
 }
 ```
 #frequency simulation and graph
 ```{r}
-library(tidyverse)
+ibrary(tidyverse)
 
-spot_frequency <- simulation(5)
+spot_frequency <- simulation(5000)
 
 frequency_data <- as.data.frame(spot_frequency) 
+
 
 frequency_data <- frequency_data %>% pivot_longer(1:40)
 
 frequency_data
-ggplot(frequency_data, aes(1:40, value)) + geom_col()
+
+#keeps places in order from board
+frequency_data$name <- factor(frequency_data$name, levels = frequency_data$name)
+
+#frequency graph 
+ggplot(frequency_data, aes(name, value)) + geom_col() + labs(title = "Space Frequency", x = "Space Number", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90))
+
 ```
 
 #heatmap simulation and graph
@@ -148,16 +157,16 @@ library(ggplot2)
     
      # dice <- sample(1:6, 2, replace = TRUE)
       #print("Go to Jail")
-     }
-    }
-  }
+    # }
+    #}
+  #}
   
   #prints the sum of your numbers (amount of spots you move) unless you go to jail
  # if(dice[1] != dice[2]){
   
    # sum(dice)
-  }
-}
+ #}
+#}
 ```
 
 #chance card: finding the neareset railraod

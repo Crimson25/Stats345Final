@@ -597,6 +597,8 @@ action_card_movement <- function(playerID, player_location, card_text)
       minus_3 <- minus_3 + 40
     }
     
+    print(paste0("Player", playerID, " moves back 3 spaces and lands on ", spaces[[minus_3]]))
+    
     return(minus_3)
   }
   
@@ -630,6 +632,8 @@ action_card_movement <- function(playerID, player_location, card_text)
   #print(distance)
   
   nearest <- distance + player_location
+
+  print(paste0("Player", playerID, " moves to ", spaces[[nearest]]))
 
   return(nearest)
 }

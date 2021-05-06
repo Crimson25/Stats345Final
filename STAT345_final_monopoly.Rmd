@@ -77,7 +77,7 @@ num <- position[[1]]
 simulation <- function(times){
   
   for(i in 1:times){
-    position[1] <- dice_roll()
+    position[1] <- roll_to_move_player(1)
     num <- position[[1]]
     board[[num]] <- board[[num]] + 1
   }
@@ -86,7 +86,7 @@ simulation <- function(times){
 ```
 #frequency simulation and graph
 ```{r}
-ibrary(tidyverse)
+library(tidyverse)
 
 spot_frequency <- simulation(5000)
 

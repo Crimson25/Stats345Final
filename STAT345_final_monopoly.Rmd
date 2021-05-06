@@ -39,7 +39,8 @@ action_cards <- action_cards %>% select(-Money)
 #devtools::install_github("mkuhn/dict")
 library(dict)
 
-players <- c(1,2,3,4)
+#players <- c(1,2,3,4)
+
 position <- dict()
 position[1] <- 1
 position[2] <- 1

@@ -57,153 +57,6 @@ while(i < 41){
 
 ```
 
-
-#creating and initiating board:
-```{r}
-board <- vector(mode = "list", length = 40)
-
-#sets each board space to count 0
-for( i in 1:40){
-  board[[i]] <- 0
-}
-
-names(board) <- prop$Properties
-```
-
-#counting amount of times a space is landed on:
-```{r}
-position[1] <- 1
-num <- position[[1]]
-
-simulation <- function(times){
-  
-  for(i in 1:times){
-    position[1] <- roll_to_move_player(1)
-    num <- position[[1]]
-    board[[num]] <- board[[num]] + 1
-  }
-  board
-}
-```
-#frequency simulation and graph
-```{r}
-library(tidyverse)
-
-spot_frequency <- simulation(5000)
-
-frequency_data <- as.data.frame(spot_frequency) 
-
-
-frequency_data <- frequency_data %>% pivot_longer(1:40)
-
-frequency_data
-
-#keeps places in order from board
-frequency_data$name <- factor(frequency_data$name, levels = frequency_data$name)
-
-#frequency graph 
-ggplot(frequency_data, aes(name, value)) + geom_col() + labs(title = "Space Frequency", x = "Space Number", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90))
-
-```
-
-#heatmap simulation and graph
-```{r}
-library(tidyverse)
-
-#spot_frequency <- simulation(5)
-frequency_data = 0
-for(i in 2:40){
-  frequency_data[i] = 0
-}
-for(i in  1:1000){
-  temp <- roll_to_move_player(1)
-  position[[1]] <- temp
-  frequency_data[temp] <- frequency_data[temp] + 1
-}
-monopoly_board_matrix <- matrix(data = c(frequency_data[21], frequency_data[22], frequency_data[23], frequency_data[24], frequency_data[25], frequency_data[26], frequency_data[27], frequency_data[28], frequency_data[29], frequency_data[30], frequency_data[31], frequency_data[20],0,0,0,0,0,0,0,0,0, frequency_data[32], 
-frequency_data[19],0,0,0,0,0,0,0,0,0, frequency_data[33], 
-frequency_data[18],0,0,0,0,0,0,0,0,0, frequency_data[34],
-frequency_data[17],0,0,0,0,0,0,0,0,0, frequency_data[35], 
-frequency_data[16],0,0,0,0,0,0,0,0,0, frequency_data[36], 
-frequency_data[15],0,0,0,0,0,0,0,0,0, frequency_data[37],
-frequency_data[14],0,0,0,0,0,0,0,0,0, frequency_data[38], 
-frequency_data[13],0,0,0,0,0,0,0,0,0, frequency_data[39], 
-frequency_data[12],0,0,0,0,0,0,0,0,0, frequency_data[40],
-frequency_data[11], frequency_data[10], frequency_data[9], frequency_data[8], frequency_data[7], frequency_data[6], frequency_data[5], frequency_data[4], frequency_data[3], frequency_data[2], frequency_data[1]), nrow = 11, ncol = 11)
-heatmap<-heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none")
-library(ggplot2)
-#df = as.data.frame(frequency_data)
-#ggplot(df,(aes(1:40,1))) + geom_tile(aes(fill = frequency_data))
-```
-
-```{r}
-#more complex dice roll that factors in double rolls
- # dice_roll <- function(){
-  
-  #first dice roll 
- # dice <- sample(1:6, 2, replace = TRUE)
-  
-  #if you roll doubles, rolls again
-  #if(dice[1] == dice[2]){
-    
-   # dice <- sample(1:6, 2, replace = TRUE)
-    
-    #if you roll doubles, rolls again
-   # if(dice[1] == dice[2]){
-    
-     # dice <- sample(1:6, 2, replace = TRUE)
-      
-      #if you roll doubles, tells you to go to jail
-     # if(dice[1] == dice[2]){
-    
-     # dice <- sample(1:6, 2, replace = TRUE)
-      #print("Go to Jail")
-    # }
-    #}
-  #}
-  
-  #prints the sum of your numbers (amount of spots you move) unless you go to jail
- # if(dice[1] != dice[2]){
-  
-   # sum(dice)
- #}
-#}
-```
-
-#chance card: finding the neareset railraod
-```{r}
-#railroad_num <- c(6, 15, 25, 35)
-
-#position[1] <- 40
-#position[[1]]
-
-#difference <- railroad_num - position[[1]]
-#difference
-
-#maxnegative <- function(x){
-  #min(x)
-#}
-#minpositive <- function(x){
-  #min(x[x > 0])
-#}
-
-#if (all(difference < 0)){
-   #print("All values are non-negatives!")
-  #distance <- maxnegative(difference)
-  
-#}else{
-  #distance <- minpositive(difference)
-#}
-
-#distance
-
-#next_railraod <- distance + position[[1]]
-
-#position[1] <- next_railraod
-
-#position[[1]]
-```
-
 #REFINED FUCNTIONS: (05-04-2021)
   #Updated all previous functions to work for the condition: "Go to Jail."
   #Fixed a bug in the moving() and moving_doubles() functions
@@ -335,9 +188,11 @@ jail_roll <- function(playerID, counter = 1, player_position = 11, type_of_roll 
   {
     if(counter == 3)
     {
+      totalDice <- sum(roll)
+    
       print(paste0("Player", playerID, " rolls doubles for a third time!", " The sum of their roll is: ", totalDice))
       print(paste0("Player", playerID, " returns to Jail for rolling too many doubles."))
-      #Go_to_Jail(playerID) #(Go_to_Jail implimented in following section)
+      In_Out_Jail(playerID) 
     }
     
     else
@@ -716,4 +571,57 @@ chance_or_community_chest <- function(playerID, player_position)
 
 ```
 
+#SECTION 04: Visualization (05-06-2021)
+
+#Heatmap with Simulation:
+```{r}
+#Create a list for spaces on board
+spot_frequency <- vector(mode = "list", length = 40)
+
+for(i in 1:40)
+{
+  spot_frequency[[i]] <- 0
+}
+
+names(spot_frequency) <- prop$Properties
+
+
+#Simulate Game
+position[1] <- 1
+times <- 5000
+
+for(i in 1:times)
+{
+  position[1] <- roll_to_move_player(1)
+  print(position[[1]])
+  num <- position[[1]]
+  spot_frequency[num] <- spot_frequency[[num]] + 1
+}
+
+#Visualizion: Count
+frequency_frame <- as.data.frame(spot_frequency) 
+frequency_frame <- frequency_frame %>% pivot_longer(1:40)
+frequency_frame$name <- factor(frequency_frame$name, levels = frequency_frame$name)
+ggplot(frequency_frame, aes(name, value)) + geom_col() + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90))
+
+#Visualization: HeatMap
+frequency_subset <- frequency_frame %>% select(value)
+frequency_data <- unname(unlist(frequency_subset))
+#frequency_data
+
+monopoly_board_matrix <- matrix(data = c(frequency_data[21], frequency_data[22], frequency_data[23], frequency_data[24], frequency_data[25], frequency_data[26], frequency_data[27], frequency_data[28], frequency_data[29], frequency_data[30], frequency_data[31], frequency_data[20],0,0,0,0,0,0,0,0,0, frequency_data[32], 
+frequency_data[19],0,0,0,0,0,0,0,0,0, frequency_data[33], 
+frequency_data[18],0,0,0,0,0,0,0,0,0, frequency_data[34],
+frequency_data[17],0,0,0,0,0,0,0,0,0, frequency_data[35], 
+frequency_data[16],0,0,0,0,0,0,0,0,0, frequency_data[36], 
+frequency_data[15],0,0,0,0,0,0,0,0,0, frequency_data[37],
+frequency_data[14],0,0,0,0,0,0,0,0,0, frequency_data[38], 
+frequency_data[13],0,0,0,0,0,0,0,0,0, frequency_data[39], 
+frequency_data[12],0,0,0,0,0,0,0,0,0, frequency_data[40],
+frequency_data[11], frequency_data[10], frequency_data[9], frequency_data[8], frequency_data[7], frequency_data[6], frequency_data[5], frequency_data[4], frequency_data[3], frequency_data[2], frequency_data[1]), nrow = 11, ncol = 11)
+heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none")
+
+#df = as.data.frame(frequency_data)
+#ggplot(df,(aes(1:40,1))) + geom_tile(aes(fill = frequency_data))
+```
 

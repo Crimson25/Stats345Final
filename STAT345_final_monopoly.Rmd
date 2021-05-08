@@ -599,11 +599,18 @@ for(i in 1:times)
 }
 
 #Visualizion: Count
-frequency_frame <- as.data.frame(spot_frequency) 
+frequency_frame <- as.data.frame(spot_frequency, check.names = FALSE) 
 frequency_frame <- frequency_frame %>% pivot_longer(1:40)
-frequency_frame
-frequency_frame$name <- factor(frequency_frame$name, levels = frequency_frame$name)
-ggplot(frequency_frame, aes(name, value)) + geom_col() + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90))
+
+names(frequency_frame)[1] <- "Properties"
+names(deeds)[1] <- "Properties"
+
+deeds_properties <- full_join(frequency_frame,deeds,  by = "Properties")
+deeds_properties$Color[is.na(deeds_properties$Color)] <- "No Color"
+
+deeds_properties$Properties <- factor(deeds_properties$Properties, levels = deeds_properties$Properties)
+
+ggplot(deeds_properties, aes(Properties, value)) + geom_col(aes(fill = Color)) + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_manual(name = "Deed Colors", values = c("tan4", "blue", "forest green", "light blue", "magenta3", "grey78","chocolate1", "red2", "gold"))
 
 #Visualization: HeatMap
 frequency_subset <- frequency_frame %>% select(value)

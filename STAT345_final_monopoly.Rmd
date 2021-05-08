@@ -610,7 +610,7 @@ deeds_properties$Color[is.na(deeds_properties$Color)] <- "No Color"
 
 deeds_properties$Properties <- factor(deeds_properties$Properties, levels = deeds_properties$Properties)
 
-ggplot(deeds_properties, aes(Properties, value)) + geom_col(aes(fill = Color)) + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_manual(name = "Deed Colors", values = c("tan4", "blue", "forest green", "light blue", "magenta3", "grey78","chocolate1", "red2", "gold"))
+ggplot(deeds_properties, aes(Properties, value)) + geom_col(aes(fill = Color)) + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + scale_fill_manual(name = "Deed Colors", values = c("tan4", "blue", "forest green", "light blue", "magenta3", "grey78","chocolate1", "red2", "gold"))
 
 #Visualization: HeatMap
 frequency_subset <- frequency_frame %>% select(value)
@@ -670,7 +670,7 @@ deeds_properties$Color[is.na(deeds_properties$Color)] <- "No Color"
 
 deeds_properties$Properties <- factor(deeds_properties$Properties, levels = deeds_properties$Properties)
 
-ggplot(deeds_properties, aes(Properties, value)) + geom_col(aes(fill = Color)) + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_manual(name = "Deed Colors", values = c("tan4", "blue", "forest green", "light blue", "magenta3", "grey78","chocolate1", "red2", "gold"))
+ggplot(deeds_properties, aes(Properties, value)) + geom_col(aes(fill = Color)) + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + scale_fill_manual(name = "Deed Colors", values = c("tan4", "blue", "forest green", "light blue", "magenta3", "grey78","chocolate1", "red2", "gold"))
 
 #Visualization: HeatMap
 frequency_subset <- frequency_frame %>% select(value)

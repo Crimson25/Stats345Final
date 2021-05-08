@@ -573,7 +573,7 @@ chance_or_community_chest <- function(playerID, player_position)
 
 #SECTION 04: Visualization (05-06-2021)
 
-#Heatmap with Simulation:
+#Heatmap with Simulation 1:
 ```{r}
 #Create a list for spaces on board
 spot_frequency <- vector(mode = "list", length = 40)
@@ -588,7 +588,7 @@ names(spot_frequency) <- prop$Properties
 
 #Simulate Game
 position[1] <- 1
-times <- 5000
+times <- 2500
 
 for(i in 1:times)
 {
@@ -601,6 +601,60 @@ for(i in 1:times)
 #Visualizion: Count
 frequency_frame <- as.data.frame(spot_frequency) 
 frequency_frame <- frequency_frame %>% pivot_longer(1:40)
+frequency_frame
+frequency_frame$name <- factor(frequency_frame$name, levels = frequency_frame$name)
+ggplot(frequency_frame, aes(name, value)) + geom_col() + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90))
+
+#Visualization: HeatMap
+frequency_subset <- frequency_frame %>% select(value)
+frequency_data <- unname(unlist(frequency_subset))
+#frequency_data
+
+monopoly_board_matrix <- matrix(data = c(frequency_data[21], frequency_data[22], frequency_data[23], frequency_data[24], frequency_data[25], frequency_data[26], frequency_data[27], frequency_data[28], frequency_data[29], frequency_data[30], frequency_data[31], frequency_data[20],0,0,0,0,0,0,0,0,0, frequency_data[32], 
+frequency_data[19],0,0,0,0,0,0,0,0,0, frequency_data[33], 
+frequency_data[18],0,0,0,0,0,0,0,0,0, frequency_data[34],
+frequency_data[17],0,0,0,0,0,0,0,0,0, frequency_data[35], 
+frequency_data[16],0,0,0,0,0,0,0,0,0, frequency_data[36], 
+frequency_data[15],0,0,0,0,0,0,0,0,0, frequency_data[37],
+frequency_data[14],0,0,0,0,0,0,0,0,0, frequency_data[38], 
+frequency_data[13],0,0,0,0,0,0,0,0,0, frequency_data[39], 
+frequency_data[12],0,0,0,0,0,0,0,0,0, frequency_data[40],
+frequency_data[11], frequency_data[10], frequency_data[9], frequency_data[8], frequency_data[7], frequency_data[6], frequency_data[5], frequency_data[4], frequency_data[3], frequency_data[2], frequency_data[1]), nrow = 11, ncol = 11)
+heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none")
+
+#df = as.data.frame(frequency_data)
+#ggplot(df,(aes(1:40,1))) + geom_tile(aes(fill = frequency_data))
+```
+
+#Heatmap with Simulation 2:
+```{r}
+#Create a list for spaces on board
+spot_frequency <- vector(mode = "list", length = 40)
+
+for(i in 1:40)
+{
+  spot_frequency[[i]] <- 0
+}
+
+names(spot_frequency) <- prop$Properties
+
+
+#Simulate Game
+position[1] <- 1
+times <- 2500
+
+for(i in 1:times)
+{
+  position[1] <- roll_to_move_player(1)
+  print(position[[1]])
+  num <- position[[1]]
+  spot_frequency[num] <- spot_frequency[[num]] + 1
+}
+
+#Visualizion: Count
+frequency_frame <- as.data.frame(spot_frequency) 
+frequency_frame <- frequency_frame %>% pivot_longer(1:40)
+frequency_frame
 frequency_frame$name <- factor(frequency_frame$name, levels = frequency_frame$name)
 ggplot(frequency_frame, aes(name, value)) + geom_col() + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90))
 

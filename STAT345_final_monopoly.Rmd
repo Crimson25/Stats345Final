@@ -588,7 +588,7 @@ names(spot_frequency) <- prop$Properties
 
 #Simulate Game
 position[1] <- 1
-times <- 5000
+times <- 2500
 
 for(i in 1:times)
 {

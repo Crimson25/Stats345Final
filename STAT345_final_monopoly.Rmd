@@ -96,7 +96,7 @@ differing_dice <- function()
 
 ```
 
-#Basic Movement Function
+#Basic Movement Function:
 ```{r}
 
 #The basic movement function takes an input of a player id and updates player position based on a roll to two six-sided dice. At this point in time, special movement, including rolling doubles, is not considered.
@@ -132,7 +132,7 @@ basic_movement <- function(playerID)
 ```
 
 #Heatmap with Simulation 2.1:
-```{r}
+```{r, include=FALSE}
 #The following code is implemented several times throughout this project (approximately twice per section for sections 2-4). While the code would be cleaner by making this code into a function call, the properties of the later roll_dice_to_move() make this a challenge. For this reason, we have chosen to keep the code independent from a function. 
 
 #The purpose and structure of this block code has been split into several sections and is explained prior to the implementation of a particular piece of the larger operation. (With the readability of our code in mind, these details will not be repeated for every repeat of this function.)
@@ -163,7 +163,9 @@ for(i in 1:times)
   num <- position[[1]]
   spot_frequency[num] <- spot_frequency[[num]] + 1
 }
+```
 
+```{r}
 #Visualization: Count
 frequency_frame <- as.data.frame(spot_frequency, check.names = FALSE) 
 frequency_frame <- frequency_frame %>% pivot_longer(1:40)
@@ -202,7 +204,7 @@ heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none"
 ```
 
 #Heatmap with Simulation 2.2:
-```{r}
+```{r, include=FALSE}
 
 #Second call of the Heatmap with Simulation.
 
@@ -228,8 +230,10 @@ for(i in 1:times)
   num <- position[[1]]
   spot_frequency[num] <- spot_frequency[[num]] + 1
 }
+```
 
-#Visualizion: Count
+```{r}
+#Visualization: Count
 frequency_frame <- as.data.frame(spot_frequency, check.names = FALSE) 
 frequency_frame <- frequency_frame %>% pivot_longer(1:40)
 frequency_frame1 <- frequency_frame
@@ -268,11 +272,9 @@ heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none"
 ```
 
 #Cost Benefit Analysis 2.3:
-```{r}
+```{r, eval = FALSE, include=FALSE}
 
 #Like the Heatmap with Simulation function, this cost benefit analysis code will be implemented several times throughout our code, precisely one time per every two calls of Heatmap with Simulation. 
-
-#The following code takes the frequency_frames created in the Heatmap with Simulations and creates a third column of the data that gives the percentage of the time a space is hit. We then remove all non-property spaces and evaluate the following code: (Profitability.Index = (Avg.Percent * (Hotel - 5*Cost.of.Houses.Hotels - List.Price))) to determine the most profitable property group. 
 
 properties_we_want <- deeds %>% select(Properties)
 properties_we_want <- unname(unlist(properties_we_want))
@@ -403,6 +405,12 @@ section3_moving <- function(playerID, spaces_to_move)
   position[[playerID]] <- position[[playerID]] + spaces_to_move
   user_place <- position[[playerID]]
   
+  if(user_place == 31)
+  {
+    new_location <- section3_In_Out_Jail(playerID)
+    return(new_location)
+  }
+  
   #Restarts Count after Passing GO:
   if(user_place >= 41)
   {
@@ -425,6 +433,12 @@ section3_moving_doubles <- function(playerID, spaces_to_move, player_location)
   position[[playerID]] <- player_location
   position[[playerID]] <- position[[playerID]] + spaces_to_move
   user_place <- position[[playerID]]
+  
+  if(user_place == 31)
+  {
+    new_location <- section3_In_Out_Jail(playerID)
+    return(new_location)
+  }
   
   #Restarts Count after Passing GO:
   if(user_place >= 41)
@@ -584,7 +598,7 @@ section3_roll_to_move_player <- function(playerID, counter = 0, player_position 
 ```
 
 #Heatmap with Simulation 3.1:
-```{r}
+```{r, include=FALSE}
 
 #Third call of the Heatmap with Simulation.
 
@@ -610,7 +624,9 @@ for(i in 1:times)
   num <- position[[1]]
   spot_frequency[num] <- spot_frequency[[num]] + 1
 }
+```
 
+```{r}
 #Visualization: Count
 frequency_frame <- as.data.frame(spot_frequency, check.names = FALSE) 
 frequency_frame <- frequency_frame %>% pivot_longer(1:40)
@@ -650,7 +666,7 @@ heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none"
 ```
 
 #Heatmap with Simulation 3.2:
-```{r}
+```{r, include=FALSE}
 
 #Fourth call of the Heatmap with Simulation.
 
@@ -676,7 +692,9 @@ for(i in 1:times)
   num <- position[[1]]
   spot_frequency[num] <- spot_frequency[[num]] + 1
 }
+```
 
+```{r}
 #Visualization: Count
 frequency_frame <- as.data.frame(spot_frequency, check.names = FALSE) 
 frequency_frame <- frequency_frame %>% pivot_longer(1:40)
@@ -716,8 +734,7 @@ heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none"
 ```
 
 #Cost Benefit Analysis 2.3:
-```{r}
-
+```{r, eval = FALSE, include=FALSE}
 #Second call of Cost Benefit Analysis
 
 properties_we_want <- deeds %>% select(Properties)
@@ -1069,6 +1086,12 @@ moving <- function(playerID, spaces_to_move)
   position[[playerID]] <- position[[playerID]] + spaces_to_move
   user_place <- position[[playerID]]
   
+  if(user_place == 31)
+  {
+    new_location <- In_Out_Jail(playerID)
+    return(new_location)
+  }
+  
   #Restarts Count after Passing GO:
   if(user_place >= 41)
   {
@@ -1109,7 +1132,11 @@ moving_doubles <- function(playerID, spaces_to_move, player_location)
   position[[playerID]] <- position[[playerID]] + spaces_to_move
   user_place <- position[[playerID]]
   
-  #print(user_place)
+  if(user_place == 31)
+  {
+    new_location <- In_Out_Jail(playerID)
+    return(new_location)
+  }
   
   #Restarts count after passing GO
   if(user_place >= 41)
@@ -1205,7 +1232,7 @@ roll_to_move_player <- function(playerID, counter = 0, player_position = 1, type
 ```
 
 #Heatmap with Simulation 4.1:
-```{r}
+```{r, include=FALSE}
 
 #Fifth call of the Heatmap with Simulation.
 
@@ -1231,7 +1258,9 @@ for(i in 1:times)
   num <- position[[1]]
   spot_frequency[num] <- spot_frequency[[num]] + 1
 }
+```
 
+```{r}
 #Visualizion: Count
 frequency_frame <- as.data.frame(spot_frequency, check.names = FALSE) 
 frequency_frame <- frequency_frame %>% pivot_longer(1:40)
@@ -1271,7 +1300,7 @@ heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none"
 ```
 
 #Heatmap with Simulation 4.2:
-```{r}
+```{r, include=FALSE}
 
 #Sixth and final call of the Heatmap with Simulation.
 
@@ -1297,7 +1326,9 @@ for(i in 1:times)
   num <- position[[1]]
   spot_frequency[num] <- spot_frequency[[num]] + 1
 }
+```
 
+```{r}
 #Visualizion: Count
 frequency_frame <- as.data.frame(spot_frequency, check.names = FALSE) 
 frequency_frame <- frequency_frame %>% pivot_longer(1:40)
@@ -1338,7 +1369,7 @@ heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none"
 #Cost Benefit Analysis 4.3:
 ```{r}
 
-#Third and final call of Cost Benefit Analysis.
+#The following code takes the frequency_frames created in the Heatmap with Simulations and creates a third column of the data that gives the percentage of the time a space is hit. We then remove all non-property spaces and evaluate the following code: (Profitability.Index = (Avg.Percent * (Hotel - 5*Cost.of.Houses.Hotels - List.Price))) to determine the most profitable property group. 
 
 properties_we_want <- deeds %>% select(Properties)
 properties_we_want <- unname(unlist(properties_we_want))
@@ -1346,26 +1377,15 @@ properties_we_want <- unname(unlist(properties_we_want))
 frequency_frame1 <- frequency_frame1 %>% mutate(percent.hit = value / times)
 frequency_frame2 <- frequency_frame2 %>% mutate(percent.hit = value / times)
 
-#average_frequency <- full_join(frequency_frame1, frequency_frame2, by = "name")  %>% mutate(Avg.Hits = ((value.x + value.y) / 2)) %>% select(name, Avg.Hits)
 average_frequency <- full_join(frequency_frame1, frequency_frame2, by = "name")  %>% mutate(Avg.Percent = ((percent.hit.x + percent.hit.y) / 2)) %>% select(name, Avg.Percent)
 average_frequency_properties  <- average_frequency %>% filter(name %in% properties_we_want)
 
-#cost_benefit_df <- deeds %>% mutate(Profit.Spread = floor((Rent + House.1 + House.2 + House.3 + House.4 + Hotel)/6)) %>% select(Color, Profit.Spread, List.Price, Cost.of.Houses.Hotels)
 
 cost_benefit_df <- deeds %>% select(Color, List.Price, Hotel, Cost.of.Houses.Hotels)
 
 combined_cost_benefit_df <- cbind.data.frame(average_frequency_properties, cost_benefit_df)
-#combined_cost_benefit_df <- combined_cost_benefit_df %>% mutate(Estimated.Payoff = (Avg.Hits * Profit.Spread) - (5*Cost.of.Houses.Hotels) - List.Price) %>% select(-c(Cost.of.Houses.Hotels, List.Price))
-#combined_cost_benefit_df <- combined_cost_benefit_df %>% mutate(Maximal.Profit = (Avg.Hits * Hotel) - (5*Cost.of.Houses.Hotels) - List.Price) %>% select(-c(Cost.of.Houses.Hotels, List.Price))
+
 combined_cost_benefit_df <- combined_cost_benefit_df %>% mutate(Profitability.Index = (Avg.Percent * (Hotel - 5*Cost.of.Houses.Hotels - List.Price)))  %>% select(-c(Cost.of.Houses.Hotels, List.Price))
-
-
-
-#most_profitable_property_groups <- combined_cost_benefit_df %>% select(Color, Estimated.Payoff)
-#most_profitable_property_groups <- aggregate(most_profitable_property_groups$Estimated.Payoff, list(most_profitable_property_groups$Color), mean) %>% rename(Color = Group.1, Estimated.Payoff = x) %>% arrange(by = desc(Estimated.Payoff))
-
-#most_profitable_property_groups <- combined_cost_benefit_df %>% select(Color, Maximal.Profit)
-#most_profitable_property_groups <- aggregate(most_profitable_property_groups$Maximal.Profit, list(most_profitable_property_groups$Color), mean) %>% rename(Color = Group.1, Maximal.Profit = x) %>% arrange(by = desc(Maximal.Profit))
 
 most_profitable_property_groups <- combined_cost_benefit_df %>% select(Color, Profitability.Index)
 most_profitable_property_groups <- aggregate(most_profitable_property_groups$Profitability.Index, list(most_profitable_property_groups$Color), mean) %>% rename(Color = Group.1, Profitability.Index = x) %>% arrange(by = desc(Profitability.Index))

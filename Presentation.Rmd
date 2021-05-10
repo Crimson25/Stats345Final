@@ -1,0 +1,1229 @@
+---
+title: "STAT 345 Final Project - Monopoly"
+author: "Ethan Manhart, Kayla Newman, Colin Fitzpatrick, Nick Kartschoke"
+output:
+  ioslides_presentation:
+    widescreen: true
+  beamer_presentation: default
+---
+
+
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(out.width = '100%', collapse = TRUE, warning=FALSE, message=FALSE)
+library(tidyverse)
+library(png)
+
+#prop <- read.csv("Properties.csv")
+prop <- read.csv("Game_Board_Spaces_Git.csv")
+equip <- read.csv("General Equipment CSV.csv")
+players <- read.csv("Players Dataset CSV.csv")
+railroads <- read.csv("Railroads Dataset CSV.csv")
+deeds <- read.csv("Title Deeds Dataset CSV.csv")
+util <- read.csv("Utilities Dataset CSV.csv")
+action_cards <- read.csv("Action_Cards_Git.csv")
+
+#make dataframes more tidy:
+deeds <- deeds %>% select(-"Identifier")
+util <- util %>% select("Utility.Company", "Purchase.Price", "Rent.with.1.Utility", "Rent.with.2.Utility", "Mortgage.Value")
+action_cards <- action_cards %>% select(-Money)
+
+#install.packages("devtools")
+#devtools::install_github("mkuhn/dict")
+library(dict)
+```
+
+## Step 1 / Planning
+- Whats the best way to store a player's position on the board
+- Implementing a broad enough movement to where it can easily be added too
+- How to create the monopoly board itself
+- How to create the visualizations of the simulations
+
+## Whats a Dictonary
+- Takes a value and creates a definition
+- We used this to store the position of the player
+- Also used to make the game board 
+```{r}
+position <- dict()
+position[1] <- 1
+
+spaces <- dict()
+locations <- c(prop$Properties)
+i <- 0
+while(i < 41){
+  spaces[i] <- locations[i]
+  i <- i + 1
+}
+
+```
+
+## Movement of Players
+```{r}
+
+roll_dice <- function()
+{
+  dice <- sample(1:6, 2, replace = TRUE)
+  return(dice)
+}
+
+basic_movement <- function(playerID)
+{
+  r <- sum(roll_dice())
+  pl <- position[[playerID]] + r
+  if(pl >= 41)
+  {
+    pl <- pl - 40
+  }
+  print(paste0("Player", playerID, " rolls: ", r))
+  print(paste0("Player", playerID, " moves ", r, " spaces and lands on: ", spaces[[pl]]))
+  return(pl)
+}
+```
+
+## How We Created the Simulations and Graphs
+- Creates a loop that runs the player's turn n times
+- The simulation each time the code is run is different due to the random inputs from rolling the dice
+- Then store the data of each turn into data frames
+- Then transform those data frames into the graphs
+
+## Frequency Graph
+```{r, include=FALSE}
+
+spot_frequency <- vector(mode = "list", length = 40)
+
+for(i in 1:40)
+{
+  spot_frequency[[i]] <- 0
+}
+
+names(spot_frequency) <- prop$Properties
+
+
+position[1] <- 1
+times <- 1500
+
+for(i in 1:times)
+{
+  position[1] <- basic_movement(1)
+  print(position[1])
+  num <- position[[1]]
+  spot_frequency[num] <- spot_frequency[[num]] + 1
+}
+
+#Visualization: Count
+frequency_frame <- as.data.frame(spot_frequency, check.names = FALSE) 
+frequency_frame <- frequency_frame %>% pivot_longer(1:40)
+frequency_frame1 <- frequency_frame
+frequency_frame1
+
+names(frequency_frame)[1] <- "Properties"
+names(deeds)[1] <- "Properties"
+
+```
+
+
+```{r, echo=FALSE}
+deeds_properties <- full_join(frequency_frame, deeds, by = "Properties")
+deeds_properties$Color[is.na(deeds_properties$Color)] <- "No Color"
+
+deeds_properties$Properties <- factor(deeds_properties$Properties, levels = deeds_properties$Properties)
+
+ggplot(deeds_properties, aes(Properties, value)) + geom_col(aes(fill = Color)) + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_manual(name = "Deed Colors", values = c("tan4", "blue", "forest green", "light blue", "magenta3", "grey78","chocolate1", "red2", "gold"))
+```
+
+
+## Heatmap
+```{r, echo=FALSE}
+#Visualization: HeatMap
+frequency_subset <- frequency_frame %>% select(value)
+frequency_data <- unname(unlist(frequency_subset))
+
+monopoly_board_matrix <- matrix(data = c(frequency_data[21], frequency_data[22], frequency_data[23], frequency_data[24], frequency_data[25], frequency_data[26], frequency_data[27], frequency_data[28], frequency_data[29], frequency_data[30], frequency_data[31], frequency_data[20],0,0,0,0,0,0,0,0,0, frequency_data[32], 
+frequency_data[19],0,0,0,0,0,0,0,0,0, frequency_data[33], 
+frequency_data[18],0,0,0,0,0,0,0,0,0, frequency_data[34],
+frequency_data[17],0,0,0,0,0,0,0,0,0, frequency_data[35], 
+frequency_data[16],0,0,0,0,0,0,0,0,0, frequency_data[36], 
+frequency_data[15],0,0,0,0,0,0,0,0,0, frequency_data[37],
+frequency_data[14],0,0,0,0,0,0,0,0,0, frequency_data[38], 
+frequency_data[13],0,0,0,0,0,0,0,0,0, frequency_data[39], 
+frequency_data[12],0,0,0,0,0,0,0,0,0, frequency_data[40],
+frequency_data[11], frequency_data[10], frequency_data[9], frequency_data[8], frequency_data[7], frequency_data[6], frequency_data[5], frequency_data[4], frequency_data[3], frequency_data[2], frequency_data[1]), nrow = 11, ncol = 11)
+heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none")
+
+```
+
+
+```{r, include=FALSE}
+
+#The Check_Hand function checks a player's hand. (For reference, a player's hand includes: Funds, Houses/Hotels, Title Deeds, and Get Out of Jail Free Cards.)
+
+Check_Hand <- function(player_identifier)
+{
+  players[player_identifier,]
+}
+```
+## Step 2
+- Rolling doubles / giving players extra rolls
+- Add jail
+- Players staying in jail
+- Count the turns they are in jail
+- Does this change the plots from earlier?
+
+
+## Jail Function
+- Takes in player id and a counter
+- It moves the current player position to jail
+- This happens instantly and then the simulation starts to try and get out of jail
+- Then calls jail roll to move the player out of jail
+
+```{r, error=TRUE}
+if(roll[1] == roll[2]){ 
+ print(paste0("Player", player_identifer, " rolls doubles to exit jail."))
+ section3_jail_roll(player_identifer)
+}
+```
+
+```{r, include=FALSE}
+
+section3_In_Out_Jail <- function(player_identifer, counter = 0)
+{
+  position[player_identifer] <- 11
+  
+  if(counter == 0)
+  {
+    print(paste0("Player", player_identifer, " is now in jail."))
+    section3_In_Out_Jail(player_identifer, counter + 1)
+  }
+  
+  else
+  {
+    hand <- Check_Hand(player_identifer)
+    card <- hand %>% select(Get.Out.of.Jail.Free) 
+    
+    if(is.na(card) == FALSE)
+    {
+      players[player_identifer, ]$Get.Out.of.Jail.Free <- NA
+      print(paste0("Player", player_identifer, " uses a 'Get Out of Jail Free Card.'"))
+      section3_jail_roll(player_identifer)
+    }
+    
+    else
+    {
+      funds <- hand %>% select(Bank)
+      
+      if(funds >= 50)
+      {
+        players[player_identifer, ]$Bank <- players[player_identifer, ]$Bank - 50
+        print(paste0("Player", player_identifer, " pays $50 to exit jail."))
+        section3_jail_roll(player_identifer)
+      }
+      
+      else
+      {
+        roll <- roll_dice()
+        
+        
+        if(roll[1] == roll[2])
+        { 
+          print(paste0("Player", player_identifer, " rolls doubles to exit jail."))
+          section3_jail_roll(player_identifer)
+        }
+        
+        else
+        {
+          if(counter < 2)
+          {
+            print(paste0("Player", player_identifer, " remains in jail."))
+            section3_In_Out_Jail(player_identifer, counter + 1)
+          }
+          
+          else
+          {
+            funds <- hand %>% select(Bank)
+      
+            if(funds >= 50)
+            {
+              funds[[1]] <- funds[[1]] - 50
+              
+              print(paste0("Player", player_identifer, " pays $50 to exit jail."))
+              section3_jail_roll(player_identifer)
+            }
+            
+            else
+            {
+              print(paste0("Player", player_identifer, " is bankrupted."))
+              
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+```{r, include=FALSE}
+
+#1) Moving (3) allows us to move a player from a starting position. We found that using this function alone creates an issue for movement, as the function does not "remember" the previous roll when moving twice consecutively as is the case when rolling doubles.
+
+section3_moving <- function(playerID, spaces_to_move)
+{
+  #Player's position on board + dice roll amount:
+  position[[playerID]] <- position[[playerID]] + spaces_to_move
+  user_place <- position[[playerID]]
+  
+  if(user_place == 31)
+  {
+    new_location <- section3_In_Out_Jail(playerID)
+    return(new_location)
+  }
+  
+  #Restarts Count after Passing GO:
+  if(user_place >= 41)
+  {
+    user_place <- user_place - 40
+  }
+  
+  print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
+  #position[playerID] <- user_place
+  return(user_place)
+}
+```
+
+```{r, include=FALSE}
+
+#2) Moving Doubles (3) is used when multiple dice rolls need to be considered. This stores player's last location and moves the player from their last known location.
+
+section3_moving_doubles <- function(playerID, spaces_to_move, player_location)
+{
+  position[[playerID]] <- player_location
+  position[[playerID]] <- position[[playerID]] + spaces_to_move
+  user_place <- position[[playerID]]
+  
+  if(user_place == 31)
+  {
+    new_location <- section3_In_Out_Jail(playerID)
+    return(new_location)
+  }
+  
+  #Restarts Count after Passing GO:
+  if(user_place >= 41)
+  {
+    user_place <- user_place - 40
+  }
+  
+  print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
+  #position[playerID] <- user_place
+  return(user_place)
+}
+```
+
+
+```{r, include=FALSE}
+
+#Used for exiting jail; see section3_roll_to_move player for understanding of process.
+
+section3_jail_roll <- function(playerID, counter = 1, player_position = 11, type_of_roll = roll_dice())
+{
+  #position[[playerID]] <- player_position
+  p <- player_position
+  
+  roll <- type_of_roll
+  
+  if(roll[1] == roll[2])
+  {
+    if(counter == 3)
+    {
+      totalDice <- sum(roll)
+      
+      print(paste0("Player", playerID, " rolls doubles for a third time!", " The sum of their roll is: ", totalDice))
+      print(paste0("Player", playerID, " returns to Jail for rolling too many doubles."))
+      section3_In_Out_Jail(playerID) #(Go_to_Jail implemented in following section)
+    }
+    
+    else
+    {
+      totalDice <- sum(roll)
+  
+      if(counter == 1)
+      {
+        print(paste0("Player", playerID, " rolls doubles!", " The sum of their roll is: ", totalDice))
+        new_position <- section3_moving_doubles(playerID, totalDice, 11)
+        player_position <- new_position
+      }
+      
+      else
+      {
+        #print(roll)
+        print(paste0("Player", playerID, " rolls doubles again!", " The sum of their roll is: ", totalDice))
+        new_position <- section3_moving_doubles(playerID, totalDice, p)
+        player_position <- new_position
+      }
+      
+      section3_jail_roll(playerID, counter + 1, new_position)
+    }
+  }
+  
+  else
+  {
+    totalDice <- sum(roll)
+    
+    if(counter == 1)
+    {
+      print(paste0("Player", playerID, " rolls: ", totalDice))
+    }
+    
+    else
+    {
+      print(paste0("Player", playerID, " rolls again and rolls: ", totalDice))
+    }
+    
+    section3_moving_doubles(playerID, totalDice, p)
+  }
+}
+```
+
+## Rolling Doubles
+- Takes in player id, a counter, and player position
+- If a player now rolls doubles it has them roll again and increases the counter argument by one
+- If the player rolls 3 doubles in a row then it sends them to jail
+- If no doubles are rolled it then moves the player
+```{r, error=TRUE}
+if(counter == 2){
+totalDice <- sum(roll)
+print(paste0("Player", playerID, " rolls doubles for a third time!", " The sum of their roll is: ", totalDice))
+print(paste0("Player", playerID, " is sent to Jail for rolling too many doubles."))
+In_Out_Jail(playerID)
+}
+```
+
+```{r, include=FALSE}
+
+section3_roll_to_move_player <- function(playerID, counter = 0, player_position = 1, type_of_roll = roll_dice())
+{
+  p <- player_position
+  
+  roll <- type_of_roll
+  
+  if(roll[1] == roll[2])
+  {
+    
+    if(counter == 2)
+    {
+      totalDice <- sum(roll)
+      
+      print(paste0("Player", playerID, " rolls doubles for a third time!", " The sum of their roll is: ", totalDice))
+      print(paste0("Player", playerID, " is sent to Jail for rolling too many doubles."))
+      section3_In_Out_Jail(playerID)
+    }
+    
+    else
+    {
+      totalDice <- sum(roll)
+  
+      if(counter == 0)
+      {
+        print(paste0("Player", playerID, " rolls doubles!", " The sum of their roll is: ", totalDice))
+        new_position <- section3_moving(playerID, totalDice)
+        player_position <- new_position
+      }
+      
+      else
+      {
+        
+        print(paste0("Player", playerID, " rolls doubles again!", " The sum of their roll is: ", totalDice))
+        new_position <- section3_moving_doubles(playerID, totalDice, p)
+        player_position <- new_position
+      }
+      
+      section3_roll_to_move_player(playerID, counter + 1, new_position)
+    }
+  }
+  
+  else
+  {
+    totalDice <- sum(roll)
+    
+    if(counter == 0)
+    {
+      print(paste0("Player", playerID, " rolls: ", totalDice))
+      section3_moving(playerID, totalDice)
+    }
+    
+    else
+    {
+      print(paste0("Player", playerID, " rolls again and rolls: ", totalDice))
+      section3_moving_doubles(playerID, totalDice, p)
+    }
+  }
+}
+
+```
+
+
+## Frequency Plot After Jail and Doubles
+
+```{r, include=FALSE}
+
+#Third call of the Heatmap with Simulation.
+
+#Create a list for spaces on board
+spot_frequency <- vector(mode = "list", length = 40)
+
+for(i in 1:40)
+{
+  spot_frequency[[i]] <- 0
+}
+
+names(spot_frequency) <- prop$Properties
+
+
+#Simulate Game
+position[1] <- 1
+times <- 1500
+
+for(i in 1:times)
+{
+  position[1] <- section3_roll_to_move_player(1)
+  print(position[1])
+  num <- position[[1]]
+  spot_frequency[num] <- spot_frequency[[num]] + 1
+}
+
+#Visualization: Count
+frequency_frame <- as.data.frame(spot_frequency, check.names = FALSE) 
+frequency_frame <- frequency_frame %>% pivot_longer(1:40)
+frequency_frame1 <- frequency_frame
+frequency_frame1
+
+
+names(frequency_frame)[1] <- "Properties"
+names(deeds)[1] <- "Properties"
+```
+
+```{r, echo=FALSE}
+deeds_properties <- full_join(frequency_frame, deeds, by = "Properties")
+deeds_properties$Color[is.na(deeds_properties$Color)] <- "No Color"
+
+deeds_properties$Properties <- factor(deeds_properties$Properties, levels = deeds_properties$Properties)
+
+ggplot(deeds_properties, aes(Properties, value)) + geom_col(aes(fill = Color)) + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_manual(name = "Deed Colors", values = c("tan4", "blue", "forest green", "light blue", "magenta3", "grey78","chocolate1", "red2", "gold"))
+```
+
+## Heatmap After Jail and Doubles
+```{r, echo=FALSE}
+#Visualization: HeatMap
+frequency_subset <- frequency_frame %>% select(value)
+frequency_data <- unname(unlist(frequency_subset))
+#frequency_data
+
+monopoly_board_matrix <- matrix(data = c(frequency_data[21], frequency_data[22], frequency_data[23], frequency_data[24], frequency_data[25], frequency_data[26], frequency_data[27], frequency_data[28], frequency_data[29], frequency_data[30], frequency_data[31], frequency_data[20],0,0,0,0,0,0,0,0,0, frequency_data[32], 
+frequency_data[19],0,0,0,0,0,0,0,0,0, frequency_data[33], 
+frequency_data[18],0,0,0,0,0,0,0,0,0, frequency_data[34],
+frequency_data[17],0,0,0,0,0,0,0,0,0, frequency_data[35], 
+frequency_data[16],0,0,0,0,0,0,0,0,0, frequency_data[36], 
+frequency_data[15],0,0,0,0,0,0,0,0,0, frequency_data[37],
+frequency_data[14],0,0,0,0,0,0,0,0,0, frequency_data[38], 
+frequency_data[13],0,0,0,0,0,0,0,0,0, frequency_data[39], 
+frequency_data[12],0,0,0,0,0,0,0,0,0, frequency_data[40],
+frequency_data[11], frequency_data[10], frequency_data[9], frequency_data[8], frequency_data[7], frequency_data[6], frequency_data[5], frequency_data[4], frequency_data[3], frequency_data[2], frequency_data[1]), nrow = 11, ncol = 11)
+heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none")
+
+
+```
+
+## Differences Between Plots
+- The heatmap is starting to change as some squares are getting lighter and others getting darker
+- The frequency graph is starting to fluctuate more
+- Just visiting / Jail is now vastly different as are program does the change of going to jail immediately skipping recording the go to jail square
+- Orange and red properties are being hit more as players coming out of jail will hit them
+
+## Step 3
+- Added Chance
+- Added Community Chest
+- Added movement for both of those
+- Are there any differences between the three set of plots?
+
+## Action Card Movement
+- Takes in player id, player location, and the card text
+- Then moves the player if needed based on what card they got
+- If the card says for example take player to nearest railroad it performs a mathematical operation to take the player to the correct spot
+```{r, error=TRUE}
+if(card_text == "Nearest Railroad"){
+rail_or_util_spaces <- c(6, 16, 26, 36)
+}
+```
+
+```{r, include=FALSE}
+
+#Helper Functions for chance_or_community_chest() that performs the more challenging movement actions that appear on chance and community chest cards.
+
+#a) Distance Functions:
+
+maxnegative <- function(x)
+{
+  min(x)
+}
+
+minpositive <- function(x)
+{
+  min(x[x > 0])
+}
+
+#b) Movement Based on Action Card Description: 
+
+action_card_movement <- function(playerID, player_location, card_text)
+{
+  rail_or_util_spaces <- c()
+  
+  if(card_text == "Nearest Railroad")
+  {
+    rail_or_util_spaces <- c(6, 16, 26, 36)
+  }
+  
+  if(card_text == "Nearest Utility")
+  {
+    rail_or_util_spaces <- c(13, 29)
+  }
+  
+  if(card_text == "-3")
+  {
+    minus_3 <- player_location - 3
+    
+    if(minus_3 <= 0)
+    {
+      minus_3 <- minus_3 + 40
+    }
+    
+    print(paste0("Player", playerID, " moves back 3 spaces and lands on ", spaces[[minus_3]]))
+    
+    return(minus_3)
+  }
+  
+  if(card_text == "Jail / Just Visiting")
+  {
+    location_after_exiting_jail <- In_Out_Jail(playerID)
+    return(location_after_exiting_jail)
+  }
+  
+  if((card_text != "Nearest Utility") && (card_text != "Nearest Railroad") && (card_text != "-3") && (card_text != "Jail / Just Visiting"))
+  {
+    print("You shouldn't be in here!")
+    return(player_location)
+  }
+  
+  #player_position <- position[[playerID]]
+  
+  difference <- rail_or_util_spaces - player_location
+  
+  if (all(difference < 0))
+  {
+    #print("All values are negatives!")
+    distance <- maxnegative(difference)
+  }
+  
+  else
+  {
+    distance <- minpositive(difference)
+  }
+  
+  #print(distance)
+  
+  nearest <- distance + player_location
+  
+  print(paste0("Player", playerID, " moves to ", spaces[[nearest]]))
+
+  return(nearest)
+}
+```
+
+## Landing on Chance or Community Chest
+- The function takes in the player position and player id
+- Each set of cards was assigned a specific text
+- Then each of these was stored in dataframes along with what the card actually says
+- It then picks a random card and does the desired task
+- Also these cards are randomized each time and not put to the bottom therefore there is a more likely chance that the player will actually move to other places on the board
+
+```{r, error=TRUE} 
+if(player_position %in% community_chest_locations){
+community_cards <- action_cards %>% filter(Card.Type %in% "Community")
+rand_num <- sample(1:16, 1, replace = TRUE)
+specific_action <- community_cards[rand_num,]
+print(paste0("Player", playerID, " lands on Community Chest and draws a Community Chest card."))
+print(paste0("Their card reads: ", specific_action$Objective))
+```
+
+
+```{r, include=FALSE}
+
+#chance_or_community_chest() prints the text of a chance and community chest card and performs the action when it is movement related.
+
+chance_or_community_chest <- function(playerID, player_position)
+{
+  chance_locations <- which(spaces %in% "Chance")
+  community_chest_locations <- which(spaces %in% "Community Chest")
+  
+  #added:, "Jail / Just Visiting"
+  problem_cards <- c("Nearest Utility", "Nearest Railroad", "-3", "Jail / Just Visiting")
+  
+  if(player_position %in% chance_locations)
+  {
+    chance_cards <- action_cards %>% filter(Card.Type %in% "Chance")
+    rand_num <- sample(1:15, 1, replace = TRUE)
+    specific_action <- chance_cards[rand_num,]
+    print(paste0("Player", playerID, " lands on Chance and draws a Chance card."))
+    print(paste0("Their card reads: ", specific_action$Objective))
+    location <- player_position
+    
+    if(specific_action$Places != "")
+    {
+      #removed problem cards here
+      
+      if(specific_action$Places %in% problem_cards)
+      {
+        #print(specific_action$Places)
+        location <- action_card_movement(1, player_position, specific_action$Places)
+      }
+      
+      else
+      {
+        #print(specific_action$Places)
+        #Note fix magic appearance issue for passing go
+        location <- which(spaces %in% specific_action$Places)
+      }
+    }
+  }
+   
+  if(player_position %in% community_chest_locations)
+  {
+    community_cards <- action_cards %>% filter(Card.Type %in% "Community")
+    rand_num <- sample(1:16, 1, replace = TRUE)
+    specific_action <- community_cards[rand_num,]
+    print(paste0("Player", playerID, " lands on Community Chest and draws a Community Chest card."))
+    print(paste0("Their card reads: ", specific_action$Objective))
+    location <- player_position
+    
+    if(specific_action$Places != "")
+    {
+      #removed problem cards here
+      
+      if(specific_action$Places %in% problem_cards)
+      {
+        #print(specific_action$Places)
+        location <- action_card_movement(1, player_position, specific_action$Places)
+      }
+      
+      else
+      {
+        #print(specific_action$Places)
+        location <- which(spaces %in% specific_action$Places)
+      }
+    }
+  }
+  
+  if((player_position %in% chance_locations) == FALSE && (player_position %in% community_chest_locations) == FALSE)
+  {
+    location <- player_position
+  }
+  
+  return(location)
+}
+
+```
+
+
+
+
+```{r, include=FALSE}
+
+#Same format of In Jail/Exiting Jail (3). 
+
+In_Out_Jail <- function(player_identifer, counter = 0)
+{
+  position[player_identifer] <- 11
+  
+  if(counter == 0)
+  {
+    print(paste0("Player", player_identifer, " is now in jail."))
+    In_Out_Jail(player_identifer, counter + 1)
+  }
+  
+  else
+  {
+    hand <- Check_Hand(player_identifer)
+    card <- hand %>% select(Get.Out.of.Jail.Free) 
+    
+    if(is.na(card) == FALSE)
+    {
+      players[player_identifer, ]$Get.Out.of.Jail.Free <- NA
+      print(paste0("Player", player_identifer, " uses a 'Get Out of Jail Free Card.'"))
+      jail_roll(player_identifer)
+    }
+    
+    else
+    {
+      funds <- hand %>% select(Bank)
+      
+      if(funds >= 500)
+      {
+        players[player_identifer, ]$Bank <- players[player_identifer, ]$Bank - 50
+        print(paste0("Player", player_identifer, " pays $50 to exit jail."))
+        jail_roll(player_identifer)
+      }
+      
+      else
+      {
+        roll <- roll_dice()
+        
+        if(roll[1] == roll[2])
+        { 
+          print(paste0("Player", player_identifer, " rolls doubles to exit jail."))
+          jail_roll(player_identifer)
+        }
+        
+        else
+        {
+          if(counter < 2)
+          {
+            print(paste0("Player", player_identifer, " remains in jail."))
+            In_Out_Jail(player_identifer, counter + 1)
+          }
+          
+          else
+          {
+            funds <- hand %>% select(Bank)
+      
+            if(funds >= 50)
+            {
+              funds[[1]] <- funds[[1]] - 50
+              
+              print(paste0("Player", player_identifer, " pays $50 to exit jail."))
+              jail_roll(player_identifer)
+            }
+            
+            else
+            {
+              print(paste0("Player", player_identifer, " is bankrupted."))
+              #remove player from player dataset?
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  #return(exit_roll)
+  #invisible(players)
+}
+```
+
+```{r, include=FALSE}
+
+#Same format as section3_jail_roll(). 
+
+jail_roll <- function(playerID, counter = 1, player_position = 11, type_of_roll = roll_dice())
+{
+  #position[[playerID]] <- player_position
+  p <- player_position
+  
+  roll <- type_of_roll
+  
+  if(roll[1] == roll[2])
+  {
+    if(counter == 3)
+    {
+      totalDice <- sum(roll)
+      
+      print(paste0("Player", playerID, " rolls doubles for a third time!", " The sum of their roll is: ", totalDice))
+      print(paste0("Player", playerID, " returns to Jail for rolling too many doubles."))
+      In_Out_Jail(playerID) #(Go_to_Jail implemented in following section)
+    }
+    
+    else
+    {
+      totalDice <- sum(roll)
+  
+      if(counter == 1)
+      {
+        print(paste0("Player", playerID, " rolls doubles!", " The sum of their roll is: ", totalDice))
+        new_position <- moving_doubles(playerID, totalDice, 11)
+        player_position <- new_position
+      }
+      
+      else
+      {
+        #print(roll)
+        print(paste0("Player", playerID, " rolls doubles again!", " The sum of their roll is: ", totalDice))
+        new_position <- moving_doubles(playerID, totalDice, p)
+        player_position <- new_position
+      }
+      
+      jail_roll(playerID, counter + 1, new_position)
+    }
+  }
+  
+  else
+  {
+    totalDice <- sum(roll)
+    
+    if(counter == 1)
+    {
+      print(paste0("Player", playerID, " rolls: ", totalDice))
+    }
+    
+    else
+    {
+      print(paste0("Player", playerID, " rolls again and rolls: ", totalDice))
+    }
+    
+    moving_doubles(playerID, totalDice, p)
+  }
+}
+```
+
+
+```{r, include=FALSE}
+
+#Updated Moving (3) to include landing on chance and community chest spaces but is otherwise identical.
+
+action_locations <- which(spaces %in% c("Chance", "Community Chest"))
+
+moving <- function(playerID, spaces_to_move)
+{
+  #Player's position on board + dice roll amount:
+  position[[playerID]] <- position[[playerID]] + spaces_to_move
+  user_place <- position[[playerID]]
+  
+  if(user_place == 31)
+  {
+    new_location <- In_Out_Jail(playerID)
+    return(new_location)
+  }
+  
+  #Restarts Count after Passing GO:
+  if(user_place >= 41)
+  {
+    user_place <- user_place - 40
+  }
+  
+  if(user_place %in% action_locations)
+  {
+    pi <- playerID 
+    user_place <- chance_or_community_chest(pi, user_place)
+    
+    if(user_place >= 41)
+    {
+      user_place <- user_place - 40
+      
+      #Pass_Go
+    }
+  }
+  
+  else
+  {
+    print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
+    #position[playerID] <- user_place
+  }
+    
+  return(user_place)
+}
+```
+
+
+```{r, include=FALSE}
+
+#Updated Moving Doubles (3) to include landing on chance and community chest spaces but is otherwise identical.
+
+moving_doubles <- function(playerID, spaces_to_move, player_location)
+{
+  position[[playerID]] <- player_location
+  position[[playerID]] <- position[[playerID]] + spaces_to_move
+  user_place <- position[[playerID]]
+  
+  if(user_place == 31)
+  {
+    new_location <- In_Out_Jail(playerID)
+    return(new_location)
+  }
+  
+  #Restarts count after passing GO
+  if(user_place >= 41)
+  {
+    user_place <- user_place - 40
+  }
+  
+  if(user_place %in% action_locations)
+  {
+    pi <- playerID 
+    user_place <- chance_or_community_chest(pi, user_place)
+    
+    if(user_place >= 41)
+    {
+      user_place <- user_place - 40
+    }
+  }
+  
+  else
+  {
+    print(paste0("Player", playerID, " moves ", spaces_to_move, " spaces and lands on: ", spaces[[user_place]]))
+    #position[playerID] <- user_place
+  }
+    
+  return(user_place)
+}
+```
+
+
+```{r, include=FALSE}
+
+#Most general movement function which includes all possible movement options now. 
+
+roll_to_move_player <- function(playerID, counter = 0, player_position = 1, type_of_roll = roll_dice())
+{
+  p <- player_position
+  
+  roll <- type_of_roll
+  
+  if(roll[1] == roll[2])
+  {
+    
+    if(counter == 2)
+    {
+      totalDice <- sum(roll)
+      
+      print(paste0("Player", playerID, " rolls doubles for a third time!", " The sum of their roll is: ", totalDice))
+      print(paste0("Player", playerID, " is sent to Jail for rolling too many doubles."))
+      In_Out_Jail(playerID)
+    }
+    
+    else
+    {
+      totalDice <- sum(roll)
+  
+      if(counter == 0)
+      {
+        print(paste0("Player", playerID, " rolls doubles!", " The sum of their roll is: ", totalDice))
+        new_position <- moving(playerID, totalDice)
+        player_position <- new_position
+      }
+      
+      else
+      {
+        #print(roll)
+        print(paste0("Player", playerID, " rolls doubles again!", " The sum of their roll is: ", totalDice))
+        new_position <- moving_doubles(playerID, totalDice, p)
+        player_position <- new_position
+      }
+      
+      roll_to_move_player(playerID, counter + 1, new_position)
+    }
+  }
+  
+  else
+  {
+    totalDice <- sum(roll)
+    
+    if(counter == 0)
+    {
+      print(paste0("Player", playerID, " rolls: ", totalDice))
+      moving(playerID, totalDice)
+    }
+    
+    else
+    {
+      print(paste0("Player", playerID, " rolls again and rolls: ", totalDice))
+      moving_doubles(playerID, totalDice, p)
+    }
+  }
+}
+
+```
+
+## Frequency Plot After Chance and Community Chest
+```{r, include=FALSE}
+
+#Fifth call of the Heatmap with Simulation.
+
+#Create a list for spaces on board
+spot_frequency <- vector(mode = "list", length = 40)
+
+for(i in 1:40)
+{
+  spot_frequency[[i]] <- 0
+}
+
+names(spot_frequency) <- prop$Properties
+
+
+#Simulate Game
+position[1] <- 1
+times <- 1500
+
+for(i in 1:times)
+{
+  position[1] <- roll_to_move_player(1)
+  print(position[1])
+  num <- position[[1]]
+  spot_frequency[num] <- spot_frequency[[num]] + 1
+}
+
+#Visualizion: Count
+frequency_frame <- as.data.frame(spot_frequency, check.names = FALSE) 
+frequency_frame <- frequency_frame %>% pivot_longer(1:40)
+frequency_frame1 <- frequency_frame
+frequency_frame1
+
+
+names(frequency_frame)[1] <- "Properties"
+names(deeds)[1] <- "Properties"
+```
+
+```{r, echo=FALSE}
+deeds_properties <- full_join(frequency_frame, deeds, by = "Properties")
+deeds_properties$Color[is.na(deeds_properties$Color)] <- "No Color"
+
+deeds_properties$Properties <- factor(deeds_properties$Properties, levels = deeds_properties$Properties)
+
+ggplot(deeds_properties, aes(Properties, value)) + geom_col(aes(fill = Color)) + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_manual(name = "Deed Colors", values = c("tan4", "blue", "forest green", "light blue", "magenta3", "grey78","chocolate1", "red2", "gold"))
+```
+
+
+## Heatmap After Chance and Community Chest
+```{r, echo=FALSE}
+#Visualization: HeatMap
+frequency_subset <- frequency_frame %>% select(value)
+frequency_data <- unname(unlist(frequency_subset))
+#frequency_data
+
+monopoly_board_matrix <- matrix(data = c(frequency_data[21], frequency_data[22], frequency_data[23], frequency_data[24], frequency_data[25], frequency_data[26], frequency_data[27], frequency_data[28], frequency_data[29], frequency_data[30], frequency_data[31], frequency_data[20],0,0,0,0,0,0,0,0,0, frequency_data[32], 
+frequency_data[19],0,0,0,0,0,0,0,0,0, frequency_data[33], 
+frequency_data[18],0,0,0,0,0,0,0,0,0, frequency_data[34],
+frequency_data[17],0,0,0,0,0,0,0,0,0, frequency_data[35], 
+frequency_data[16],0,0,0,0,0,0,0,0,0, frequency_data[36], 
+frequency_data[15],0,0,0,0,0,0,0,0,0, frequency_data[37],
+frequency_data[14],0,0,0,0,0,0,0,0,0, frequency_data[38], 
+frequency_data[13],0,0,0,0,0,0,0,0,0, frequency_data[39], 
+frequency_data[12],0,0,0,0,0,0,0,0,0, frequency_data[40],
+frequency_data[11], frequency_data[10], frequency_data[9], frequency_data[8], frequency_data[7], frequency_data[6], frequency_data[5], frequency_data[4], frequency_data[3], frequency_data[2], frequency_data[1]), nrow = 11, ncol = 11)
+heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none")
+
+#df = as.data.frame(frequency_data)
+#ggplot(df,(aes(1:40,1))) + geom_tile(aes(fill = frequency_data))
+```
+
+
+```{r, include=FALSE}
+
+#Sixth and final call of the Heatmap with Simulation.
+
+#Create a list for spaces on board
+spot_frequency <- vector(mode = "list", length = 40)
+
+for(i in 1:40)
+{
+  spot_frequency[[i]] <- 0
+}
+
+names(spot_frequency) <- prop$Properties
+
+
+#Simulate Game
+position[1] <- 1
+times <- 1500
+
+for(i in 1:times)
+{
+  position[1] <- roll_to_move_player(1)
+  print(position[1])
+  num <- position[[1]]
+  spot_frequency[num] <- spot_frequency[[num]] + 1
+}
+
+#Visualizion: Count
+frequency_frame <- as.data.frame(spot_frequency, check.names = FALSE) 
+frequency_frame <- frequency_frame %>% pivot_longer(1:40)
+frequency_frame2 <- frequency_frame
+frequency_frame2
+
+names(frequency_frame)[1] <- "Properties"
+names(deeds)[1] <- "Properties"
+
+deeds_properties <- full_join(frequency_frame, deeds, by = "Properties")
+deeds_properties$Color[is.na(deeds_properties$Color)] <- "No Color"
+
+deeds_properties$Properties <- factor(deeds_properties$Properties, levels = deeds_properties$Properties)
+
+ggplot(deeds_properties, aes(Properties, value)) + geom_col(aes(fill = Color)) + labs(title = "Space Frequency", x = "Space", y  = "Frequency") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_manual(name = "Deed Colors", values = c("tan4", "blue", "forest green", "light blue", "magenta3", "grey78","chocolate1", "red2", "gold"))
+
+#Visualization: HeatMap
+frequency_subset <- frequency_frame %>% select(value)
+frequency_data <- unname(unlist(frequency_subset))
+#frequency_data
+
+monopoly_board_matrix <- matrix(data = c(frequency_data[21], frequency_data[22], frequency_data[23], frequency_data[24], frequency_data[25], frequency_data[26], frequency_data[27], frequency_data[28], frequency_data[29], frequency_data[30], frequency_data[31], frequency_data[20],0,0,0,0,0,0,0,0,0, frequency_data[32], 
+frequency_data[19],0,0,0,0,0,0,0,0,0, frequency_data[33], 
+frequency_data[18],0,0,0,0,0,0,0,0,0, frequency_data[34],
+frequency_data[17],0,0,0,0,0,0,0,0,0, frequency_data[35], 
+frequency_data[16],0,0,0,0,0,0,0,0,0, frequency_data[36], 
+frequency_data[15],0,0,0,0,0,0,0,0,0, frequency_data[37],
+frequency_data[14],0,0,0,0,0,0,0,0,0, frequency_data[38], 
+frequency_data[13],0,0,0,0,0,0,0,0,0, frequency_data[39], 
+frequency_data[12],0,0,0,0,0,0,0,0,0, frequency_data[40],
+frequency_data[11], frequency_data[10], frequency_data[9], frequency_data[8], frequency_data[7], frequency_data[6], frequency_data[5], frequency_data[4], frequency_data[3], frequency_data[2], frequency_data[1]), nrow = 11, ncol = 11)
+heatmap <- heatmap(x=monopoly_board_matrix, Colv = NA, Rowv = NA, scale = "none")
+
+#df = as.data.frame(frequency_data)
+#ggplot(df,(aes(1:40,1))) + geom_tile(aes(fill = frequency_data))
+```
+
+## Differences Between All of the Plots
+- With chance and chest now in effect, the frequency graph fluctuates even more 
+- The heatmap has now changed in where the player position is now changed even more 
+- Any property that is listed in a chance or chest card is now has a increased chance in landing there
+
+## Cost Benefit Analysis
+- With knowing the data of where players landed
+- This is an application of that data
+- Seeing which of the properties after the hotel has been built is the most cost effective
+```{r, echo=FALSE}
+properties_we_want <- deeds %>% select(Properties)
+properties_we_want <- unname(unlist(properties_we_want))
+
+frequency_frame1 <- frequency_frame1 %>% mutate(percent.hit = value / times)
+frequency_frame2 <- frequency_frame2 %>% mutate(percent.hit = value / times)
+
+average_frequency <- full_join(frequency_frame1, frequency_frame2, by = "name")  %>% mutate(Avg.Percent = ((percent.hit.x + percent.hit.y) / 2)) %>% select(name, Avg.Percent)
+average_frequency_properties  <- average_frequency %>% filter(name %in% properties_we_want)
+
+
+
+cost_benefit_df <- deeds %>% select(Color, List.Price, Hotel, Cost.of.Houses.Hotels)
+
+combined_cost_benefit_df <- cbind.data.frame(average_frequency_properties, cost_benefit_df)
+combined_cost_benefit_df <- combined_cost_benefit_df %>% mutate(Profitability.Index = (Avg.Percent * (Hotel - 5*Cost.of.Houses.Hotels - List.Price)))  %>% select(-c(Cost.of.Houses.Hotels, List.Price))
+
+
+most_profitable_property_groups <- combined_cost_benefit_df %>% select(Color, Profitability.Index)
+most_profitable_property_groups <- aggregate(most_profitable_property_groups$Profitability.Index, list(most_profitable_property_groups$Color), mean) %>% rename(Color = Group.1, Profitability.Index = x) %>% arrange(by = desc(Profitability.Index))
+
+most_profitable_property_groups
+```
+
+## Challenges
+- Finding the best way to code each part
+- Making sure everyone understood how each part of the code works
+- Lots of time spent on debugging the code
+
+## If We had More Time
+- Would have implemented money and the buying and selling of properties
+- Would have done more in depth cost benefit analysis
+- Added tiles names to the heatmap to be more clear
+- When you land on jail you get sent to jail
+
+## Conclusion
+- With the simulation and cost-benefit analysis we can conclude that orange is the best property set to own
+- The blue set can make you the most money but there is only two squares also landing on those squares is increased due to the chance cards
+- The worst property set to own is green due to its cost and it being right next to jail
+
+
+## Any Questions?
